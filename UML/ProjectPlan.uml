@@ -1,0 +1,48 @@
+@startuml
+
+interface Agent {
+    float[] Chromosome
+    StateHistory history
+    AgentAction GetAgentAction(SystemState)
+}
+
+struct AgentAction {
+    float[] ActionVector
+}
+
+interface System {
+    int NumActions
+    int NumPercepts
+    float ScoreFunction(StateHistory)
+    SystemState AdvanceState(SystemState, AgentAction, AgentAction)
+}
+
+struct SystemState {
+    float[][] state
+}
+
+struct StateHistory {
+    SystemState[] history
+    void AddStateToHistory(SystemState)
+}
+
+class Manager {
+    System system
+    int GenerationIndex
+    Agent[] Generation
+    Agent[] BestAgentByGeneration
+}
+
+class GeneticBreeder {
+    float[] AgentScores
+    Agent[] NextGeneration(Agent[])
+}
+
+Agent *-d- AgentAction
+StateHistory *-r- SystemState
+Agent *-u- StateHistory
+
+Agent -r-* Manager
+System -l-* Manager
+GeneticBreeder -u- Manager
+@enduml
