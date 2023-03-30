@@ -19,9 +19,9 @@ Among the specifics yet to be determined:
 
 If you are interested in getting involved with this project (or want to learn more about genetic algorithms + learning), here are some helpful links:
 
-- [https://en.wikipedia.org/wiki/Genetic_algorithm](Wikipedia: Genetic Algorithm)
-- [https://towardsdatascience.com/introduction-to-genetic-algorithms-including-example-code-e396e98d8bf3](TowardsDataScience Post: Introduction to Genetic Algorithms)
-- [https://en.wikipedia.org/wiki/Crossover_(genetic_algorithm)](Wikipedia: Crossover)
-- [https://en.wikipedia.org/wiki/Mutation_(genetic_algorithm)](Wikipedia: Mutation)
-- [https://en.wikipedia.org/wiki/Selection_(genetic_algorithm)](Wikipedia: Selection)
+- [Wikipedia: Genetic Algorithm](https://en.wikipedia.org/wiki/Genetic_algorithm)
+- [TowardsDataScience Post: Introduction to Genetic Algorithms](https://towardsdatascience.com/introduction-to-genetic-algorithms-including-example-code-e396e98d8bf3)
+- [Wikipedia: Crossover](https://en.wikipedia.org/wiki/Crossover_(genetic_algorithm))
+- [Wikipedia: Mutation](https://en.wikipedia.org/wiki/Mutation_(genetic_algorithm))
+- [Wikipedia: Selection](https://en.wikipedia.org/wiki/Selection_(genetic_algorithm))
 
