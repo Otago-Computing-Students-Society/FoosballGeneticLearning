@@ -1,6 +1,6 @@
-@startuml
+@startuml ProjectPlan
 
-interface Agent {
+Class Agent {
     float[] Chromosome
     StateHistory history
     AgentAction GetAgentAction(SystemState)
@@ -27,10 +27,15 @@ struct StateHistory {
 }
 
 class Manager {
-    System system
     int GenerationIndex
     Agent[] Generation
     Agent[] BestAgentByGeneration
+}
+
+class Simulator {
+    Agent Agent1
+    Agent Agent2
+    StateHistory History
 }
 
 class GeneticBreeder {
@@ -38,11 +43,18 @@ class GeneticBreeder {
     Agent[] NextGeneration(Agent[])
 }
 
+class DataCollector {
+    WriteData()
+}
+
 Agent *-d- AgentAction
-StateHistory *-r- SystemState
+StateHistory *-l- SystemState
 Agent *-u- StateHistory
 
 Agent -r-* Manager
 System -l-* Manager
-GeneticBreeder -u- Manager
+Simulator -d- Manager: Concurrent Processing
+GeneticBreeder -u-* Manager
+DataCollector -u-* Manager
+
 @enduml
