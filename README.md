@@ -2,6 +2,12 @@
 
 This project is an attempt to build a genetic learning model around a simulated foosball table. We aim to train initially random agents into component foosball players using nothing more than repeated matches against one another. 
 
+If you want to join this project, or just ask questions, feel free to email the members involved!
+
+- Hayden McAlister: mcaha814@student.otago.ac.nz
+
+#### Planning
+
 Right now we are in the very early planning stages - ensuring everyone is on the same page before starting implementations.
 
 Among the specifics yet to be determined:
