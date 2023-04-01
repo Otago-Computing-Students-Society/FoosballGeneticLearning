@@ -13,6 +13,7 @@ struct AgentAction {
 interface System {
     int NumActions
     int NumPercepts
+    SystemState InitalizeState()
     float ScoreFunction(StateHistory)
     SystemState AdvanceState(SystemState, AgentActions[])
 }
