@@ -47,14 +47,16 @@ class DataCollector {
     WriteData()
 }
 
-Agent *-d- AgentAction
-StateHistory *-l- SystemState
-Agent *-u- StateHistory
-
 Agent -r-* Manager
 System -l-* Manager
-Simulator -d- Manager: Concurrent Processing
 GeneticBreeder -u-* Manager
 DataCollector -u-* Manager
+
+Agent *-d- AgentAction
+
+System *-u- StateHistory
+StateHistory *-l- SystemState
+
+Simulator -d- Manager: Concurrent Processing
 
 @enduml
