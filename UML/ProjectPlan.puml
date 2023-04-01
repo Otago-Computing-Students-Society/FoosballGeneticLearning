@@ -1,13 +1,13 @@
 @startuml ProjectPlan
 
 Class Agent {
-    float[] Chromosome
+    Matrix Chromosome
     StateHistory history
     AgentAction GetAgentAction(SystemState)
 }
 
 struct AgentAction {
-    float[] ActionVector
+    Vector ActionVector
 }
 
 interface System {
@@ -18,7 +18,7 @@ interface System {
 }
 
 struct SystemState {
-    float[][] state
+    Vector state
 }
 
 struct StateHistory {
