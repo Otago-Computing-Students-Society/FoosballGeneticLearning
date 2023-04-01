@@ -39,6 +39,16 @@ func (system *FoosballSystem) ScoreFunction(history systemstate.StateHistory) fl
 	return 0.0
 }
 
+// Defines the function to create an initial state of the system.
+//
+// For Foosball, this should include all rods in some neutral position and a ball
+// in the center of the table with some random perturbation in position of velocity.
+//
+// TODO(hayden): Implement this function correctly for our system.
+func (system *FoosballSystem) InitializeState(state systemstate.SystemState, agentActions []agent.AgentAction) systemstate.SystemState {
+	return nil
+}
+
 // Defines the function to advance the system state forward a step,
 // given the agent actions in this state.
 //
