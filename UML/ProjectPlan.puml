@@ -14,7 +14,7 @@ interface System {
     int NumActions
     int NumPercepts
     float ScoreFunction(StateHistory)
-    SystemState AdvanceState(SystemState, AgentAction, AgentAction)
+    SystemState AdvanceState(SystemState, AgentActions[])
 }
 
 struct SystemState {
@@ -33,8 +33,7 @@ class Manager {
 }
 
 class Simulator {
-    Agent Agent1
-    Agent Agent2
+    Agent[] Agents
     StateHistory History
 }
 
