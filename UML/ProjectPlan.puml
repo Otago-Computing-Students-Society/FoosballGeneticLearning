@@ -7,7 +7,7 @@ Class Agent {
 }
 
 struct AgentAction {
-    Vector ActionVector
+    Vector ActionVecto
 }
 
 interface System {
@@ -54,7 +54,7 @@ DataCollector -u-* Manager
 
 Agent *-d- AgentAction
 
-System *-u- StateHistory
+System -u- StateHistory
 StateHistory *-l- SystemState
 
 Simulator -d- Manager: Concurrent Processing
