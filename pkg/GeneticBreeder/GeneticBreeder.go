@@ -59,9 +59,9 @@ func (gb *GeneticBreeder) NextGeneration(currentGeneration []*agent.Agent, gener
 	newGeneration := make([]*agent.Agent, numAgents)
 
 	for agentIndex := range newGeneration {
-		newAgentParents := selectParents(currentGeneration, generationScores, nil)
-		newAgent := combineParents(newAgentParents, generationScores)
-		newAgent = applyMutation(newAgent)
+		newAgentParents := gb.selectParents(currentGeneration, generationScores)
+		newAgent := gb.combineParents(newAgentParents)
+		newAgent = gb.applyMutation(newAgent)
 		newGeneration[agentIndex] = newAgent
 	}
 
@@ -78,7 +78,6 @@ func (gb *GeneticBreeder) NextGeneration(currentGeneration []*agent.Agent, gener
 // TODO(hayden): Come up with a good solution for parent selection. I suggest using
 // parent scores as a weighting into a probability distribution. This would allow for
 // bad agents to still have a chance of passing on chromosomes, increasing genetic diversity.
-func selectParents(possibleParents []*agent.Agent, parentScores []float64, randomSource rand.Source) []*agent.Agent {
 	if randomSource == nil {
 		randomSource = rand.NewSource(uint64(time.Now().UnixNano()))
 	}
@@ -98,6 +97,7 @@ func selectParents(possibleParents []*agent.Agent, parentScores []float64, rando
 	numParentsDistribution := distuv.NewTriangle(triangleDistLow, triangleDistHigh, triangleDistMode, randomSource)
 	numParents := int(numParentsDistribution.Rand())
 
+func (gb *GeneticBreeder) selectParents(possibleParents []*agent.Agent, parentScores []float64) []*agent.Agent {
 	// Now we can select a number of selectedParents based on these probabilities
 	selectedParents := []*agent.Agent{}
 	selectedParentIndices := []int{}
@@ -130,8 +130,8 @@ func selectParents(possibleParents []*agent.Agent, parentScores []float64, rando
 // (for example) exactly two parents
 //
 // TODO(hayden): Come up with a good implementation for this. I suggest k-point crossover.
-func combineParents(parents []*agent.Agent, parentScores []float64) *agent.Agent {
 	return nil
+func (gb *GeneticBreeder) combineParents(parents []*agent.Agent) *agent.Agent {
 }
 
 // Apply a random mutation with some probability. This probability should be small, but non-zero.
@@ -140,6 +140,6 @@ func combineParents(parents []*agent.Agent, parentScores []float64) *agent.Agent
 // reveal a decent value for mutation rate, but we should be slightly clever in how mutations actually occur.
 // A single mutation position may not be enough to ensure mutations produce fitter agents every so often,
 // and perhaps entire sections of a chromosome must be mutated...
-func applyMutation(agent *agent.Agent) *agent.Agent {
 	return nil
+func (gb *GeneticBreeder) applyMutation(agent *agent.Agent) *agent.Agent {
 }
