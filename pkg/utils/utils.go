@@ -22,3 +22,23 @@ func ShuffleSlice[T comparable](randomGenerator *rand.Rand, slice []T) {
 	})
 }
 
+// Finds the mean and standard deviation of a slice of floats
+//
+// # Returns
+//
+// (mean, std)
+func SummaryStatistics(slice []float64) (float64, float64) {
+	sum := 0.0
+	for _, i := range slice {
+		sum += i
+	}
+	mean := sum / float64(len(slice))
+
+	squareDifferenceSum := 0.0
+	for _, i := range slice {
+		squareDifferenceSum += math.Pow(i-mean, 2.0)
+	}
+	std := math.Sqrt(squareDifferenceSum / float64(len(slice)))
+
+	return mean, std
+}
