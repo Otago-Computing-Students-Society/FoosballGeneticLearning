@@ -3,13 +3,20 @@ package geneticbreeder
 import (
 	agent "OCSS/FoosballGeneticLearning/pkg/Agent"
 	"OCSS/FoosballGeneticLearning/pkg/utils"
-	"fmt"
-	"os"
-	"time"
+	"sort"
 
 	"golang.org/x/exp/rand"
+	"gonum.org/v1/gonum/mat"
 	"gonum.org/v1/gonum/stat/distuv"
 )
+
+type GeneticBreeder struct {
+	randomGenerator             *rand.Rand
+	numParentsDistribution      distuv.Rander
+	kCrossoverDistribution      distuv.Rander
+	mutationRate                float64
+	mutationSegmentDistribution distuv.Rander
+}
 
 // Given the current generation of agents, as well as the agent scores,
 // calculate the next generation of agents. This is done by, for each new agent
