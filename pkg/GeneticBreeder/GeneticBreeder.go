@@ -78,26 +78,14 @@ func (gb *GeneticBreeder) NextGeneration(currentGeneration []*agent.Agent, gener
 // TODO(hayden): Come up with a good solution for parent selection. I suggest using
 // parent scores as a weighting into a probability distribution. This would allow for
 // bad agents to still have a chance of passing on chromosomes, increasing genetic diversity.
-	if randomSource == nil {
-		randomSource = rand.NewSource(uint64(time.Now().UnixNano()))
-	}
-	// Generate a probability distribution of parents based on the parentScores
-	parentSelectionDistribution := distuv.NewCategorical(parentScores, randomSource)
-
-	// Also create a quick distribution to select the number of parents
-	triangleDistLow := 2.0
-	triangleDistMode := 3.5
-	triangleDistHigh := 5.0
-	if len(possibleParents) < int(triangleDistHigh) {
-		fmt.Fprintf(os.Stderr, "ERROR: Not enough parents to allow for %v as parent upper distribution\n", triangleDistHigh)
-		os.Exit(1)
-	}
-
-	// Yes... the NewTriangle signature is indeed low, high, mode... unintuitive...
-	numParentsDistribution := distuv.NewTriangle(triangleDistLow, triangleDistHigh, triangleDistMode, randomSource)
-	numParents := int(numParentsDistribution.Rand())
-
 func (gb *GeneticBreeder) selectParents(possibleParents []*agent.Agent, parentScores []float64) []*agent.Agent {
+	// Determine how many parents we will select
+	numParents := int(gb.numParentsDistribution.Rand())
+
+	// Create a distribution (with random seed) to select parents, based on
+	// parent fitness
+	parentSelectionSource := gb.randomGenerator.Uint64()
+	parentSelectionDistribution := distuv.NewCategorical(parentScores, rand.NewSource(parentSelectionSource))
 	// Now we can select a number of selectedParents based on these probabilities
 	selectedParents := []*agent.Agent{}
 	selectedParentIndices := []int{}
