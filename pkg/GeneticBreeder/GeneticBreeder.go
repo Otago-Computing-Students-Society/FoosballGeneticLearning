@@ -18,6 +18,37 @@ type GeneticBreeder struct {
 	mutationSegmentDistribution distuv.Rander
 }
 
+func NewGeneticBreeder(randomSource rand.Source, numberParents int) *GeneticBreeder {
+	// Define the numParents distribution
+	// // Current implementation has number of parents selected as
+	// 0.5 chance of 2 parents, 0.5 change of 3 parents.
+	//
+	// See https://pkg.go.dev/gonum.org/v1/gonum@v0.12.0/stat/distuv#Categorical for explanation
+	numParentsWeights := []float64{0.0, 0.0, 0.5, 0.5}
+	numParentsDistribution := distuv.NewCategorical(numParentsWeights, randomSource)
+
+	// Define the crossover distribution. This should be proportional to the size of
+	// the chromosome, but we can also have a set value (since the proportionality shouldn't be huge)
+	// In this implementation, we have a set probability of some small number for k.
+	// See https://pkg.go.dev/gonum.org/v1/gonum@v0.12.0/stat/distuv#Categorical for explanation
+	kWeights := []float64{0.0, 0.0, 0.0, 0.2, 0.2, 0.2, 0.2, 0.2}
+	kCrossoverDistribution := distuv.NewCategorical(kWeights, randomSource)
+
+	// Define the mutationSegmentDistribution - which determines how many
+	// contiguous genes in the chromosome are updated. Currently implemented is
+	// a distribution to update some finite number of genes, from 1 to 5
+	mutationSegmentWeights := []float64{0.0, 0.2, 0.2, 0.2, 0.2, 0.2}
+	mutationSegmentDistribution := distuv.NewCategorical(mutationSegmentWeights, randomSource)
+
+	return &GeneticBreeder{
+		randomGenerator:             rand.New(randomSource),
+		numParentsDistribution:      numParentsDistribution,
+		kCrossoverDistribution:      kCrossoverDistribution,
+		mutationRate:                0.01,
+		mutationSegmentDistribution: mutationSegmentDistribution,
+	}
+}
+
 // Given the current generation of agents, as well as the agent scores,
 // calculate the next generation of agents. This is done by, for each new agent
 // 1. Finding the parents of the agent (based on fitness score)
