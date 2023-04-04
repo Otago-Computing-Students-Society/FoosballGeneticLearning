@@ -163,6 +163,5 @@ func (gb *GeneticBreeder) combineParents(parents []*agent.Agent) *agent.Agent {
 // reveal a decent value for mutation rate, but we should be slightly clever in how mutations actually occur.
 // A single mutation position may not be enough to ensure mutations produce fitter agents every so often,
 // and perhaps entire sections of a chromosome must be mutated...
-	return nil
 func (gb *GeneticBreeder) applyMutation(agent *agent.Agent) *agent.Agent {
 }
