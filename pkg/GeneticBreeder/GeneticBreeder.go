@@ -164,4 +164,36 @@ func (gb *GeneticBreeder) combineParents(parents []*agent.Agent) *agent.Agent {
 // A single mutation position may not be enough to ensure mutations produce fitter agents every so often,
 // and perhaps entire sections of a chromosome must be mutated...
 func (gb *GeneticBreeder) applyMutation(agent *agent.Agent) *agent.Agent {
+	// If we do not roll a mutation - don't do anything!
+	if distuv.UnitUniform.Rand() > gb.mutationRate {
+		return agent
+	}
+
+	chromosomeData := agent.Chromosome.RawMatrix().Data
+	chromosomeRows, chromosomeCols := agent.Chromosome.Dims()
+	chromosomeSize := chromosomeRows * chromosomeCols
+	// We have a mutation - let's figure out where we are applying this and how much mutation we apply!
+	mutationSegmentSize := int(gb.mutationSegmentDistribution.Rand())
+	mutationStartIndexDistribution := distuv.Uniform{
+		Min: 0,
+		Max: float64(chromosomeSize - mutationSegmentSize),
+		Src: rand.NewSource(gb.randomGenerator.Uint64()),
+	}
+	mutationSegmentStartIndex := int(mutationStartIndexDistribution.Rand())
+
+	// Current mutation distribution is simply a gaussian with same mean and scale as the chromosome
+	chromosomeMean, chromosomeStd := utils.SummaryStatistics(chromosomeData)
+	mutationDistribution := distuv.Normal{
+		Mu:    chromosomeMean,
+		Sigma: chromosomeStd,
+		Src:   rand.NewSource(gb.randomGenerator.Uint64()),
+	}
+
+	for i := 0; i < mutationSegmentSize; i++ {
+		chromosomeData[mutationSegmentStartIndex+i] = mutationDistribution.Rand()
+	}
+
+	// For peace of mind, let's recreate the chromosome matrix
+	agent.Chromosome = mat.NewDense(chromosomeRows, chromosomeCols, chromosomeData)
+	return agent
 }
