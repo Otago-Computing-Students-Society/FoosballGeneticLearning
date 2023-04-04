@@ -118,8 +118,43 @@ func (gb *GeneticBreeder) selectParents(possibleParents []*agent.Agent, parentSc
 // (for example) exactly two parents
 //
 // TODO(hayden): Come up with a good implementation for this. I suggest k-point crossover.
-	return nil
 func (gb *GeneticBreeder) combineParents(parents []*agent.Agent) *agent.Agent {
+	// Process the agent chromosomes into a useful format, and collect the size information
+	parentChromosomes := make([][]float64, len(parents))
+	for index, parent := range parents {
+		parentChromosomes[index] = parent.Chromosome.RawMatrix().Data
+	}
+	chromosomeRows, chromosomeCols := parents[0].Chromosome.Dims()
+	chromosomeSize := chromosomeRows * chromosomeCols
+
+	// First, we should determine the number of crossovers to take.
+	// i.e. we select a value of k.
+	numCrossovers := int(gb.kCrossoverDistribution.Rand())
+
+	// Then we select the crossover points by creating an array of all possible crossover indices
+	// then shuffling that, taking the first k elements, and sorting the result
+	indexArray := make([]int, chromosomeSize)
+	for i := 0; i < chromosomeSize; i++ {
+		indexArray[i] = i
+	}
+	utils.ShuffleSlice(gb.randomGenerator, indexArray)
+	crossoverPoints := indexArray[:numCrossovers]
+	sort.Ints(crossoverPoints)
+
+	// Next we can actually start putting the parent chromosomes together!  Yay!
+	// We should start with random parent, to avoid biasing the fittest parent to the start of the chromosome
+	childChromosomeData := make([]float64, chromosomeSize)
+	childChromosomeIndex := 0
+	parentIndex := gb.randomGenerator.Int() % len(parents)
+	for _, crossoverPoint := range crossoverPoints {
+		parentChromosome := parentChromosomes[parentIndex]
+		copy(childChromosomeData[childChromosomeIndex:crossoverPoint], parentChromosome[childChromosomeIndex:crossoverPoint])
+		childChromosomeIndex = crossoverPoint
+		parentIndex = (parentIndex + 1) % len(parents)
+	}
+
+	childChromosome := mat.NewDense(chromosomeRows, chromosomeCols, childChromosomeData)
+	return agent.NewAgent(childChromosome)
 }
 
 // Apply a random mutation with some probability. This probability should be small, but non-zero.
