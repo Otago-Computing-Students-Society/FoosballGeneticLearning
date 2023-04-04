@@ -11,6 +11,13 @@ type Agent struct {
 	AgentHistory systemstate.StateHistory
 }
 
+func NewAgent(chromosome *mat.Dense) *Agent {
+	return &Agent{
+		Chromosome:   chromosome,
+		AgentHistory: make(systemstate.StateHistory, 0),
+	}
+}
+
 type AgentAction struct {
 	Action *mat.VecDense
 }
