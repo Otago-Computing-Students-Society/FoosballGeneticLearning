@@ -1,14 +1,14 @@
 package agent
 
 import (
-	system "OCSS/FoosballGeneticLearning/pkg/SystemState"
+	systemstate "OCSS/FoosballGeneticLearning/pkg/SystemState"
 
 	"gonum.org/v1/gonum/mat"
 )
 
 type Agent struct {
 	Chromosome   *mat.Dense
-	AgentHistory system.StateHistory
+	AgentHistory systemstate.StateHistory
 }
 
 type AgentAction struct {
