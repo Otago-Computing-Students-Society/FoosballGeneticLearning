@@ -1,8 +1,14 @@
 package datacollector
 
 import (
+	"path"
+
 	"github.com/xitongsys/parquet-go/source"
 	"github.com/xitongsys/parquet-go/writer"
+)
+
+const (
+	bestAgentDataFile = "bestAgentData.pq"
 )
 
 type BestAgentData struct {
@@ -15,8 +21,8 @@ type BestAgentDataCollector struct {
 	fileHandle *source.ParquetFile
 }
 
-func NewBestAgentDataCollector(dataFile string) *BestAgentDataCollector {
-	fileHandle, dataWriter := newParquetWriter(dataFile, new(GenerationEndData))
+func NewBestAgentDataCollector(dataDirectory string) *BestAgentDataCollector {
+	fileHandle, dataWriter := newParquetWriter(path.Join(dataDirectory, bestAgentDataFile), new(GenerationEndData))
 	return &BestAgentDataCollector{
 		dataWriter: dataWriter,
 		fileHandle: fileHandle,
