@@ -9,7 +9,6 @@ type System interface {
 	NumPercepts() int
 	NumActions() int
 	NumAgentsPerSimulation() int
-	ScoreFunction(systemstate.StateHistory) float64
 	InitializeState() *systemstate.SystemState
 	AdvanceState(systemstate.SystemState, []agent.AgentAction) *systemstate.SystemState
 }
