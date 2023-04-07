@@ -6,6 +6,8 @@ import (
 	"gonum.org/v1/gonum/mat"
 )
 
+type AgentAction *mat.VecDense
+
 type Agent struct {
 	Chromosome   *mat.Dense
 	AgentHistory systemstate.StateHistory
@@ -20,7 +22,7 @@ func NewAgent(chromosome *mat.Dense) *Agent {
 	}
 }
 
-func (agent *Agent) GetAction(stateVector *mat.VecDense) *mat.VecDense {
+func (agent *Agent) GetAction(stateVector *mat.VecDense) AgentAction {
 	numActions, _ := agent.Chromosome.Dims()
 	actionVector := mat.NewVecDense(numActions, nil)
 	actionVector.MulVec(agent.Chromosome, stateVector)
