@@ -1,34 +1,44 @@
 package datacollector
 
 import (
+	agent "OCSS/FoosballGeneticLearning/pkg/Agent"
 	"path"
 
+	"github.com/hmcalister/gonum-matrix-io/pkg/gonumio"
 	"github.com/xitongsys/parquet-go/source"
 	"github.com/xitongsys/parquet-go/writer"
 )
 
 const (
-	bestAgentDataFile = "bestAgentData.pq"
+	bestAgentDataFile       = "bestAgentData.pq"
+	bestAgentChromosomeFile = "bestAgentChromosome.bin"
 )
 
-type BestAgentData struct {
-	Score               float64 `parquet:"name=Score, type=DOUBLE"`
-	FlatAgentChromosome float64 `parquet:"name=FlatAgentChromosome, type=DOUBLE, repetitiontype=REPEATED"`
+type bestAgentData struct {
+	Score float64 `parquet:"name=Score, type=DOUBLE"`
 }
 
 type BestAgentDataCollector struct {
-	dataWriter *writer.ParquetWriter
-	fileHandle *source.ParquetFile
+	dataDirectory string
+	dataWriter    *writer.ParquetWriter
+	fileHandle    *source.ParquetFile
 }
 
+// Create a new BestAgentDataCollector for storing information on the best agent in a generation
 func NewBestAgentDataCollector(dataDirectory string) *BestAgentDataCollector {
-	fileHandle, dataWriter := newParquetWriter(path.Join(dataDirectory, bestAgentDataFile), new(GenerationEndData))
+	fileHandle, dataWriter := newParquetWriter(path.Join(dataDirectory, bestAgentDataFile), new(bestAgentData))
 	return &BestAgentDataCollector{
-		dataWriter: dataWriter,
-		fileHandle: fileHandle,
+		dataDirectory: dataDirectory,
+		dataWriter:    dataWriter,
+		fileHandle:    fileHandle,
 	}
 }
 
-func (dc *BestAgentDataCollector) CollectBestAgentData(data GenerationEndData) {
-	dc.dataWriter.Write(data)
+// Save all relevant information about the best agent to a parquet file
+// as well as saving the best agent chromosome to a binary file
+func (dc *BestAgentDataCollector) CollectBestAgentData(bestAgent *agent.Agent) {
+	dc.dataWriter.Write(bestAgentData{
+		Score: bestAgent.Score,
+	})
+	gonumio.SaveMatrix(bestAgent.Chromosome, path.Join(dc.dataDirectory, bestAgentChromosomeFile))
 }
