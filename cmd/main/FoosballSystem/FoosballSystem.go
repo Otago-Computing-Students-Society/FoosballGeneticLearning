@@ -1,4 +1,4 @@
-package main
+package foosballsystem
 
 import (
 	agent "OCSS/FoosballGeneticLearning/pkg/Agent"
