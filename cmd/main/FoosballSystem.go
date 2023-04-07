@@ -6,8 +6,9 @@ import (
 )
 
 const (
-	NUM_PERCEPTS = 8
-	NUM_ACTIONS  = 8
+	NUM_PERCEPTS              = 8
+	NUM_ACTIONS               = 8
+	NUM_AGENTS_PER_SIMULATION = 2
 )
 
 type FoosballSystem struct {
@@ -23,20 +24,9 @@ func (system *FoosballSystem) NumActions() int {
 	return NUM_ACTIONS
 }
 
-// Defines the scoring of an agents state history.
-//
-// TODO(hayden): Implement a score function that makes sense for the system implementation
-//
-// # Arguments
-//
-// - `history`: the StateHistory of an agent to score
-//
-// # Returns
-//
-// A float representing the "score" of the agent represented by `history`.
-// This float should be larger for a more "fit" agent.
-func (system *FoosballSystem) ScoreFunction(history systemstate.StateHistory) float64 {
-	return 0.0
+// Gets the number of agents per simulation for this system.
+func (system *FoosballSystem) NumAgentsPerSimulation() int {
+	return NUM_AGENTS_PER_SIMULATION
 }
 
 // Defines the function to create an initial state of the system.
@@ -45,7 +35,7 @@ func (system *FoosballSystem) ScoreFunction(history systemstate.StateHistory) fl
 // in the center of the table with some random perturbation in position of velocity.
 //
 // TODO(hayden): Implement this function correctly for our system.
-func (system *FoosballSystem) InitializeState(state systemstate.SystemState, agentActions []agent.AgentAction) *systemstate.SystemState {
+func (system *FoosballSystem) InitializeState(state *systemstate.SystemState, agentActions []agent.AgentAction) *systemstate.SystemState {
 	return &systemstate.SystemState{}
 }
 
@@ -65,6 +55,6 @@ func (system *FoosballSystem) InitializeState(state systemstate.SystemState, age
 // # Returns
 //
 // A SystemState representing the updated state given the prior state and agent actions
-func (system *FoosballSystem) AdvanceState(state systemstate.SystemState, agentActions []agent.AgentAction) *systemstate.SystemState {
+func (system *FoosballSystem) AdvanceState(state *systemstate.SystemState, agentActions []agent.AgentAction) *systemstate.SystemState {
 	return &systemstate.SystemState{}
 }
