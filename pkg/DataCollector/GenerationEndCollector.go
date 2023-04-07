@@ -1,6 +1,7 @@
 package datacollector
 
 import (
+	agent "OCSS/FoosballGeneticLearning/pkg/Agent"
 	"path"
 
 	"github.com/xitongsys/parquet-go/source"
@@ -11,10 +12,8 @@ const (
 	generationEndDataFile = "generationEndData.pq"
 )
 
-type GenerationEndData struct {
-	ScoreMax float64   `parquet:"name=ScoreMax, type=DOUBLE"`
-	ScoreMin float64   `parquet:"name=ScoreMin, type=DOUBLE"`
-	Scores   []float64 `parquet:"name=Scores, type=DOUBLE, repetitiontype=REPEATED"`
+type generationEndData struct {
+	Scores []float64 `parquet:"name=Scores, type=DOUBLE, repetitiontype=REPEATED"`
 }
 
 type GenerationEndDataCollector struct {
@@ -23,13 +22,20 @@ type GenerationEndDataCollector struct {
 }
 
 func NewGenerationEndCollector(dataDirectory string) *GenerationEndDataCollector {
-	fileHandle, dataWriter := newParquetWriter(path.Join(dataDirectory, generationEndDataFile), new(GenerationEndData))
+	fileHandle, dataWriter := newParquetWriter(path.Join(dataDirectory, generationEndDataFile), new(generationEndData))
 	return &GenerationEndDataCollector{
 		dataWriter: dataWriter,
 		fileHandle: fileHandle,
 	}
 }
 
-func (dc *GenerationEndDataCollector) CollectGenerationEndData(data GenerationEndData) {
-	dc.dataWriter.Write(data)
+func (dc *GenerationEndDataCollector) CollectGenerationEndData(agents []*agent.Agent) {
+	scores := make([]float64, len(agents))
+	for agentIndex := range agents {
+		scores[agentIndex] = agents[agentIndex].Score
+	}
+
+	dc.dataWriter.Write(generationEndData{
+		Scores: scores,
+	})
 }
