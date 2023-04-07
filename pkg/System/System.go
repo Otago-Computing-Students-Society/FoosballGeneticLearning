@@ -10,5 +10,5 @@ type System interface {
 	NumActions() int
 	NumAgentsPerSimulation() int
 	InitializeState() *systemstate.SystemState
-	AdvanceState(systemstate.SystemState, []agent.AgentAction) *systemstate.SystemState
+	AdvanceState(*systemstate.SystemState, []agent.AgentAction) *systemstate.SystemState
 }
