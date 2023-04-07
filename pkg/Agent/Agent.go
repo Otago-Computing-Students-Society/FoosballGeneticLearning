@@ -20,6 +20,4 @@ func NewAgent(chromosome *mat.Dense) *Agent {
 	}
 }
 
-type AgentAction struct {
-	Action *mat.VecDense
 }
