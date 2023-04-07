@@ -45,8 +45,8 @@ func (system *FoosballSystem) ScoreFunction(history systemstate.StateHistory) fl
 // in the center of the table with some random perturbation in position of velocity.
 //
 // TODO(hayden): Implement this function correctly for our system.
-func (system *FoosballSystem) InitializeState(state systemstate.SystemState, agentActions []agent.AgentAction) systemstate.SystemState {
-	return nil
+func (system *FoosballSystem) InitializeState(state systemstate.SystemState, agentActions []agent.AgentAction) *systemstate.SystemState {
+	return &systemstate.SystemState{}
 }
 
 // Defines the function to advance the system state forward a step,
@@ -65,6 +65,6 @@ func (system *FoosballSystem) InitializeState(state systemstate.SystemState, age
 // # Returns
 //
 // A SystemState representing the updated state given the prior state and agent actions
-func (system *FoosballSystem) AdvanceState(state systemstate.SystemState, agentActions []agent.AgentAction) systemstate.SystemState {
-	return nil
+func (system *FoosballSystem) AdvanceState(state systemstate.SystemState, agentActions []agent.AgentAction) *systemstate.SystemState {
+	return &systemstate.SystemState{}
 }
