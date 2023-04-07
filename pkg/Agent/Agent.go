@@ -20,4 +20,9 @@ func NewAgent(chromosome *mat.Dense) *Agent {
 	}
 }
 
+func (agent *Agent) GetAction(stateVector *mat.VecDense) *mat.VecDense {
+	numActions, _ := agent.Chromosome.Dims()
+	actionVector := mat.NewVecDense(numActions, nil)
+	actionVector.MulVec(agent.Chromosome, stateVector)
+	return actionVector
 }
