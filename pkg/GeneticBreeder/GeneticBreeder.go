@@ -1,10 +1,11 @@
 package geneticbreeder
 
 import (
-	agent "OCSS/FoosballGeneticLearning/pkg/Agent"
-	"OCSS/FoosballGeneticLearning/pkg/utils"
 	"math"
 	"sort"
+
+	agent "github.com/Otago-Computer-Science-Society/FoosballGeneticLearning/pkg/Agent"
+	"github.com/Otago-Computer-Science-Society/FoosballGeneticLearning/pkg/utils"
 
 	"golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/mat"

@@ -1,8 +1,8 @@
 package basicsystem
 
 import (
-	agent "OCSS/FoosballGeneticLearning/pkg/Agent"
-	systemstate "OCSS/FoosballGeneticLearning/pkg/SystemState"
+	agent "github.com/Otago-Computer-Science-Society/FoosballGeneticLearning/pkg/Agent"
+	systemstate "github.com/Otago-Computer-Science-Society/FoosballGeneticLearning/pkg/SystemState"
 
 	"gonum.org/v1/gonum/mat"
 )

@@ -1,9 +1,10 @@
 package basicsystem
 
 import (
-	manager "OCSS/FoosballGeneticLearning/pkg/Manager"
 	"os"
 	"testing"
+
+	manager "github.com/Otago-Computer-Science-Society/FoosballGeneticLearning/pkg/Manager"
 )
 
 func TestBasicSystem(t *testing.T) {
