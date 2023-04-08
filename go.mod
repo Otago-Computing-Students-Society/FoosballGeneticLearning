@@ -3,11 +3,13 @@ module OCSS/FoosballGeneticLearning
 go 1.20
 
 require (
-	golang.org/x/exp v0.0.0-20200224162631-6cc2880d07d6
+	golang.org/x/exp v0.0.0-20230321023759-10a507213a29
 	gonum.org/v1/gonum v0.12.0
 )
 
-require github.com/hmcalister/gonum-matrix-io v0.0.0-20230404235649-bdcb5bf7e036 // indirect
+require github.com/hmcalister/gonum-matrix-io v0.0.0-20230404235649-bdcb5bf7e036
+
+require github.com/davecgh/go-spew v1.1.1 // indirect
 
 require (
 	github.com/apache/arrow/go/arrow v0.0.0-20200730104253-651201b0f516 // indirect
