@@ -32,10 +32,10 @@ type Manager struct {
 	generationEndDataCollector  *datacollector.GenerationEndDataCollector
 }
 
-// Create a new manager given the system that is to be learned
+// Create a new manager given the system that is to be learned, and the number of simulations to run per generation
 //
 // Note the system given must fully implement the System interface in `pkg/system`
-func NewManager(system system.System) *Manager {
+func NewManager(system system.System, numSimulationsPerGeneration int) *Manager {
 	os.MkdirAll(path.Dir(DATA_DIRECTORY), 0700)
 	os.MkdirAll(path.Dir(LOG_FILE_PATH), 0700)
 
