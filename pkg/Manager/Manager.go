@@ -43,7 +43,8 @@ func NewManager(system system.System, numSimulationsPerGeneration int) *Manager 
 	if err != nil {
 		panic("Could not open log file!")
 	}
-	logger := log.New(logFile, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
+	multiWriter := io.MultiWriter(os.Stdout, logFile)
+	logger := log.New(multiWriter, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
 
 	return &Manager{
 		System:                     system,
