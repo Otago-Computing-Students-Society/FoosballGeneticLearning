@@ -1,7 +1,14 @@
 package main
 
-import "fmt"
+import (
+	sys "OCSS/FoosballGeneticLearning/cmd/main/multiAgentTest"
+	manager "OCSS/FoosballGeneticLearning/pkg/Manager"
+)
 
 func main() {
-	fmt.Println("Hello, World!")
+	targetSystem := sys.TestSystem{}
+	manager := manager.NewManager(&targetSystem, 100)
+	for generationIndex := 0; generationIndex < 1000; generationIndex++ {
+		manager.SimulateGeneration()
+	}
 }
