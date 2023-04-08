@@ -101,7 +101,7 @@ func (gb *GeneticBreeder) selectParents(possibleParents []*agent.Agent, parentSc
 	numParents := int(gb.numParentsDistribution.Rand())
 
 	// Create a distribution (with random seed) to select parents, based on
-	// parent fitness
+	// parent fitness.
 	parentSelectionSource := gb.randomGenerator.Uint64()
 	parentSelectionDistribution := distuv.NewCategorical(parentScores, rand.NewSource(parentSelectionSource))
 	// Now we can select a number of selectedParents based on these probabilities
