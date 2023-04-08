@@ -22,10 +22,10 @@ const (
 )
 
 type Manager struct {
-	Logger                     *log.Logger
 	bestAgentDataCollector     *datacollector.BestAgentDataCollector
 	generationEndDataCollector *datacollector.GenerationEndDataCollector
 	system                      system.System
+	logger                      *log.Logger
 }
 
 // Create a new manager given the system that is to be learned
