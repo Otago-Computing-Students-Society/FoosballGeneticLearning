@@ -3,6 +3,7 @@ package geneticbreeder
 import (
 	agent "OCSS/FoosballGeneticLearning/pkg/Agent"
 	"OCSS/FoosballGeneticLearning/pkg/utils"
+	"math"
 	"sort"
 
 	"golang.org/x/exp/rand"
@@ -18,7 +19,7 @@ type GeneticBreeder struct {
 	mutationSegmentDistribution distuv.Rander
 }
 
-func NewGeneticBreeder(randomSource rand.Source, numberParents int) *GeneticBreeder {
+func NewGeneticBreeder(randomSource rand.Source) *GeneticBreeder {
 	// Define the numParents distribution
 	// // Current implementation has number of parents selected as
 	// 0.5 chance of 2 parents, 0.5 change of 3 parents.
