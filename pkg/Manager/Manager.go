@@ -35,7 +35,7 @@ type Manager struct {
 // Create a new manager given the system that is to be learned, and the number of simulations to run per generation
 //
 // Note the system given must fully implement the System interface in `pkg/system`
-func NewManager(system system.System, numSimulationsPerGeneration int) *Manager {
+func NewManager(system system.System, numSimulationsPerGeneration int, verbose bool) *Manager {
 	os.MkdirAll(path.Dir(DATA_DIRECTORY), 0700)
 	os.MkdirAll(path.Dir(LOG_FILE_PATH), 0700)
 
@@ -43,7 +43,13 @@ func NewManager(system system.System, numSimulationsPerGeneration int) *Manager 
 	if err != nil {
 		panic("Could not open log file!")
 	}
-	multiWriter := io.MultiWriter(os.Stdout, logFile)
+
+	var multiWriter io.Writer
+	if verbose {
+		multiWriter = io.MultiWriter(os.Stdout, logFile)
+	} else {
+		multiWriter = io.MultiWriter(logFile)
+	}
 	logger := log.New(multiWriter, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
 
 	numAgents := system.NumAgentsPerSimulation() * numSimulationsPerGeneration
