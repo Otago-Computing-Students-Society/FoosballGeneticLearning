@@ -55,9 +55,13 @@ func NewManager(system system.System, numSimulationsPerGeneration int) *Manager 
 	geneticBreeder := geneticbreeder.NewGeneticBreeder(rand.NewSource(uint64(time.Now().Nanosecond())))
 
 	return &Manager{
-		System:                     system,
-		Logger:                     logger,
-		bestAgentDataCollector:     datacollector.NewBestAgentDataCollector(DATA_DIRECTORY),
-		generationEndDataCollector: datacollector.NewGenerationEndCollector(DATA_DIRECTORY),
+		system:                      system,
+		logger:                      logger,
+		generationIndex:             0,
+		numSimulationsPerGeneration: numSimulationsPerGeneration,
+		currentGeneration:           currentGeneration,
+		geneticBreeder:              geneticBreeder,
+		bestAgentDataCollector:      datacollector.NewBestAgentDataCollector(DATA_DIRECTORY),
+		generationEndDataCollector:  datacollector.NewGenerationEndCollector(DATA_DIRECTORY),
 	}
 }
