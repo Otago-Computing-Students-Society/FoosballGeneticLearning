@@ -3,6 +3,7 @@ package utils
 import (
 	"math"
 
+	"golang.org/x/exp/constraints"
 	"golang.org/x/exp/rand"
 )
 
@@ -13,6 +14,42 @@ func IsElementInSlice[T comparable](slice []T, element T) bool {
 		}
 	}
 	return false
+}
+
+// Returns the minimum element of a slice
+//
+// Panics if slice is empty (len = 0)
+func MinElementInSlice[T constraints.Ordered](slice []T) T {
+	if len(slice) == 0 {
+		panic("cannot find minimum of empty slice")
+	}
+
+	currentMin := slice[0]
+	for _, elem := range slice {
+		if elem < currentMin {
+			currentMin = elem
+		}
+	}
+
+	return currentMin
+}
+
+// Returns the maximum element of a slice
+//
+// Panics if slice is empty (len = 0)
+func MaxElementInSlice[T constraints.Ordered](slice []T) T {
+	if len(slice) == 0 {
+		panic("cannot find minimum of empty slice")
+	}
+
+	currentMax := slice[0]
+	for _, elem := range slice {
+		if elem > currentMax {
+			currentMax = elem
+		}
+	}
+
+	return currentMax
 }
 
 // Shuffles the given list
