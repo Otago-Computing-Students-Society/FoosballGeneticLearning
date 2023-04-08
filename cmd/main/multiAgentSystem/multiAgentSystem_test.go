@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	manager "github.com/Otago-Computer-Science-Society/Foosball-Genetic-Learning/pkg/Manager"
+	manager "github.com/Otago-Computer-Science-Society/FoosballGeneticLearning/pkg/Manager"
 )
 
 func TestMultiAgentSystem(t *testing.T) {

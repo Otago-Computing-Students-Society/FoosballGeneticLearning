@@ -1,4 +1,4 @@
-module github.com/Otago-Computer-Science-Society/Foosball-Genetic-Learning
+module github.com/Otago-Computer-Science-Society/FoosballGeneticLearning
 
 go 1.20
 

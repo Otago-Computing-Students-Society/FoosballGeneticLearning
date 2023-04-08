@@ -8,11 +8,11 @@ import (
 	"sync"
 	"time"
 
-	agent "github.com/Otago-Computer-Science-Society/Foosball-Genetic-Learning/pkg/Agent"
-	datacollector "github.com/Otago-Computer-Science-Society/Foosball-Genetic-Learning/pkg/DataCollector"
-	geneticbreeder "github.com/Otago-Computer-Science-Society/Foosball-Genetic-Learning/pkg/GeneticBreeder"
-	simulator "github.com/Otago-Computer-Science-Society/Foosball-Genetic-Learning/pkg/Simulator"
-	system "github.com/Otago-Computer-Science-Society/Foosball-Genetic-Learning/pkg/System"
+	agent "github.com/Otago-Computer-Science-Society/FoosballGeneticLearning/pkg/Agent"
+	datacollector "github.com/Otago-Computer-Science-Society/FoosballGeneticLearning/pkg/DataCollector"
+	geneticbreeder "github.com/Otago-Computer-Science-Society/FoosballGeneticLearning/pkg/GeneticBreeder"
+	simulator "github.com/Otago-Computer-Science-Society/FoosballGeneticLearning/pkg/Simulator"
+	system "github.com/Otago-Computer-Science-Society/FoosballGeneticLearning/pkg/System"
 
 	"golang.org/x/exp/rand"
 )

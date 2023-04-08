@@ -1,7 +1,7 @@
 package agent
 
 import (
-	systemstate "github.com/Otago-Computer-Science-Society/Foosball-Genetic-Learning/pkg/SystemState"
+	systemstate "github.com/Otago-Computer-Science-Society/FoosballGeneticLearning/pkg/SystemState"
 
 	"gonum.org/v1/gonum/mat"
 	"gonum.org/v1/gonum/stat/distuv"

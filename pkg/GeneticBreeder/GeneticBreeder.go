@@ -4,8 +4,8 @@ import (
 	"math"
 	"sort"
 
-	agent "github.com/Otago-Computer-Science-Society/Foosball-Genetic-Learning/pkg/Agent"
-	"github.com/Otago-Computer-Science-Society/Foosball-Genetic-Learning/pkg/utils"
+	agent "github.com/Otago-Computer-Science-Society/FoosballGeneticLearning/pkg/Agent"
+	"github.com/Otago-Computer-Science-Society/FoosballGeneticLearning/pkg/utils"
 
 	"golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/mat"

@@ -1,8 +1,8 @@
 package simulator
 
 import (
-	agent "github.com/Otago-Computer-Science-Society/Foosball-Genetic-Learning/pkg/Agent"
-	system "github.com/Otago-Computer-Science-Society/Foosball-Genetic-Learning/pkg/System"
+	agent "github.com/Otago-Computer-Science-Society/FoosballGeneticLearning/pkg/Agent"
+	system "github.com/Otago-Computer-Science-Society/FoosballGeneticLearning/pkg/System"
 )
 
 const MAXIMUM_SIMULATION_ITERATIONS = 1000000

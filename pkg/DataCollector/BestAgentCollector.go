@@ -3,7 +3,7 @@ package datacollector
 import (
 	"path"
 
-	agent "github.com/Otago-Computer-Science-Society/Foosball-Genetic-Learning/pkg/Agent"
+	agent "github.com/Otago-Computer-Science-Society/FoosballGeneticLearning/pkg/Agent"
 
 	"github.com/hmcalister/gonum-matrix-io/pkg/gonumio"
 	"github.com/xitongsys/parquet-go/source"
