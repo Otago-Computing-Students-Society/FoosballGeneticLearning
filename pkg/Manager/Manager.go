@@ -46,6 +46,12 @@ func NewManager(system system.System, numSimulationsPerGeneration int) *Manager 
 	multiWriter := io.MultiWriter(os.Stdout, logFile)
 	logger := log.New(multiWriter, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
 
+	numAgents := system.NumAgentsPerSimulation() * numSimulationsPerGeneration
+	currentGeneration := make([]*agent.Agent, numAgents)
+	for agentIndex := range currentGeneration {
+		currentGeneration[agentIndex] = agent.NewRandomGaussianAgent(system.NumActions(), system.NumPercepts())
+	}
+
 	return &Manager{
 		System:                     system,
 		Logger:                     logger,
