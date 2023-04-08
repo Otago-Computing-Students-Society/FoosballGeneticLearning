@@ -72,13 +72,18 @@ func (gb *GeneticBreeder) NextGeneration(currentGeneration []*agent.Agent) []*ag
 	}
 
 	for agentIndex := range newGeneration {
-		newAgentParents := gb.selectParents(currentGeneration, generationScores)
-		newAgent := gb.combineParents(newAgentParents)
-		newAgent = gb.applyMutation(newAgent)
-		newGeneration[agentIndex] = newAgent
+		newGeneration[agentIndex] = gb.breedNewAgent(currentGeneration, generationScores)
 	}
 
 	return newGeneration
+}
+
+// Creates a new agent given the previous generation
+func (gb *GeneticBreeder) breedNewAgent(currentGeneration []*agent.Agent, generationScores []float64) *agent.Agent {
+	newAgentParents := gb.selectParents(currentGeneration, generationScores)
+	newAgent := gb.combineParents(newAgentParents)
+	newAgent = gb.applyMutation(newAgent)
+	return newAgent
 }
 
 // Given the possible parents (a set of agents) and those parents fitness functions,
