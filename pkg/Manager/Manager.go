@@ -52,6 +52,8 @@ func NewManager(system system.System, numSimulationsPerGeneration int) *Manager 
 		currentGeneration[agentIndex] = agent.NewRandomGaussianAgent(system.NumActions(), system.NumPercepts())
 	}
 
+	geneticBreeder := geneticbreeder.NewGeneticBreeder(rand.NewSource(uint64(time.Now().Nanosecond())))
+
 	return &Manager{
 		System:                     system,
 		Logger:                     logger,
