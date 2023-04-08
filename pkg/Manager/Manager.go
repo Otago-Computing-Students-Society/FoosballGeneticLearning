@@ -22,10 +22,14 @@ const (
 )
 
 type Manager struct {
-	bestAgentDataCollector     *datacollector.BestAgentDataCollector
-	generationEndDataCollector *datacollector.GenerationEndDataCollector
 	system                      system.System
 	logger                      *log.Logger
+	generationIndex             int
+	numSimulationsPerGeneration int
+	currentGeneration           []*agent.Agent
+	geneticBreeder              *geneticbreeder.GeneticBreeder
+	bestAgentDataCollector      *datacollector.BestAgentDataCollector
+	generationEndDataCollector  *datacollector.GenerationEndDataCollector
 }
 
 // Create a new manager given the system that is to be learned
