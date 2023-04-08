@@ -55,10 +55,14 @@ func NewGeneticBreeder(randomSource rand.Source) *GeneticBreeder {
 // 1. Finding the parents of the agent (based on fitness score)
 // 2. Combining those parents in some way (see combineAgents function)
 // 3. Applying any mutations.
-func (gb *GeneticBreeder) NextGeneration(currentGeneration []*agent.Agent, generationScores []float64) []*agent.Agent {
+func (gb *GeneticBreeder) NextGeneration(currentGeneration []*agent.Agent) []*agent.Agent {
 	numAgents := len(currentGeneration)
 	newGeneration := make([]*agent.Agent, numAgents)
 
+	generationScores := make([]float64, len(currentGeneration))
+	for agentIndex := range currentGeneration {
+		generationScores[agentIndex] = currentGeneration[agentIndex].Score
+	}
 	for agentIndex := range newGeneration {
 		newAgentParents := gb.selectParents(currentGeneration, generationScores)
 		newAgent := gb.combineParents(newAgentParents)
