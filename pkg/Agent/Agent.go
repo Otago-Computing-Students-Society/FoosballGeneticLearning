@@ -6,7 +6,13 @@ import (
 	"gonum.org/v1/gonum/mat"
 )
 
-type AgentAction *mat.VecDense
+type AgentAction struct {
+	Action *mat.VecDense
+}
+
+type AgentScore struct {
+	Score float64
+}
 
 type Agent struct {
 	Chromosome   *mat.Dense
