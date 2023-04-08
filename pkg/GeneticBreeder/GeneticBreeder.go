@@ -32,8 +32,8 @@ func NewGeneticBreeder(randomSource rand.Source) *GeneticBreeder {
 	// the chromosome, but we can also have a set value (since the proportionality shouldn't be huge)
 	// In this implementation, we have a set probability of some small number for k.
 	// See https://pkg.go.dev/gonum.org/v1/gonum@v0.12.0/stat/distuv#Categorical for explanation
-	kWeights := []float64{0.0, 0.0, 0.0, 0.2, 0.2, 0.2, 0.2, 0.2}
-	kCrossoverDistribution := distuv.NewCategorical(kWeights, randomSource)
+	kCrossoverWeights := []float64{0.0, 0.0, 0.0, 0.2, 0.2, 0.2, 0.2, 0.2}
+	kCrossoverDistribution := distuv.NewCategorical(kCrossoverWeights, randomSource)
 
 	// Define the mutationSegmentDistribution - which determines how many
 	// contiguous genes in the chromosome are updated. Currently implemented is
