@@ -3,6 +3,7 @@ package geneticbreeder
 import (
 	agent "OCSS/FoosballGeneticLearning/pkg/Agent"
 	"OCSS/FoosballGeneticLearning/pkg/utils"
+	"math"
 	"sort"
 
 	"golang.org/x/exp/rand"
@@ -18,7 +19,7 @@ type GeneticBreeder struct {
 	mutationSegmentDistribution distuv.Rander
 }
 
-func NewGeneticBreeder(randomSource rand.Source, numberParents int) *GeneticBreeder {
+func NewGeneticBreeder(randomSource rand.Source) *GeneticBreeder {
 	// Define the numParents distribution
 	// // Current implementation has number of parents selected as
 	// 0.5 chance of 2 parents, 0.5 change of 3 parents.
@@ -31,8 +32,8 @@ func NewGeneticBreeder(randomSource rand.Source, numberParents int) *GeneticBree
 	// the chromosome, but we can also have a set value (since the proportionality shouldn't be huge)
 	// In this implementation, we have a set probability of some small number for k.
 	// See https://pkg.go.dev/gonum.org/v1/gonum@v0.12.0/stat/distuv#Categorical for explanation
-	kWeights := []float64{0.0, 0.0, 0.0, 0.2, 0.2, 0.2, 0.2, 0.2}
-	kCrossoverDistribution := distuv.NewCategorical(kWeights, randomSource)
+	kCrossoverWeights := []float64{0.0, 0.0, 0.0, 0.2, 0.2, 0.2, 0.2, 0.2}
+	kCrossoverDistribution := distuv.NewCategorical(kCrossoverWeights, randomSource)
 
 	// Define the mutationSegmentDistribution - which determines how many
 	// contiguous genes in the chromosome are updated. Currently implemented is
@@ -44,7 +45,7 @@ func NewGeneticBreeder(randomSource rand.Source, numberParents int) *GeneticBree
 		randomGenerator:             rand.New(randomSource),
 		numParentsDistribution:      numParentsDistribution,
 		kCrossoverDistribution:      kCrossoverDistribution,
-		mutationRate:                0.01,
+		mutationRate:                math.Pow10(-6),
 		mutationSegmentDistribution: mutationSegmentDistribution,
 	}
 }
@@ -54,18 +55,35 @@ func NewGeneticBreeder(randomSource rand.Source, numberParents int) *GeneticBree
 // 1. Finding the parents of the agent (based on fitness score)
 // 2. Combining those parents in some way (see combineAgents function)
 // 3. Applying any mutations.
-func (gb *GeneticBreeder) NextGeneration(currentGeneration []*agent.Agent, generationScores []float64) []*agent.Agent {
+func (gb *GeneticBreeder) NextGeneration(currentGeneration []*agent.Agent) []*agent.Agent {
 	numAgents := len(currentGeneration)
 	newGeneration := make([]*agent.Agent, numAgents)
 
+	generationScores := make([]float64, len(currentGeneration))
+	for agentIndex := range currentGeneration {
+		generationScores[agentIndex] = currentGeneration[agentIndex].Score
+	}
+
+	minimumScore := utils.MinElementInSlice(generationScores)
+	if minimumScore < 0 {
+		for index := range generationScores {
+			generationScores[index] -= minimumScore
+		}
+	}
+
 	for agentIndex := range newGeneration {
-		newAgentParents := gb.selectParents(currentGeneration, generationScores)
-		newAgent := gb.combineParents(newAgentParents)
-		newAgent = gb.applyMutation(newAgent)
-		newGeneration[agentIndex] = newAgent
+		newGeneration[agentIndex] = gb.breedNewAgent(currentGeneration, generationScores)
 	}
 
 	return newGeneration
+}
+
+// Creates a new agent given the previous generation
+func (gb *GeneticBreeder) breedNewAgent(currentGeneration []*agent.Agent, generationScores []float64) *agent.Agent {
+	newAgentParents := gb.selectParents(currentGeneration, generationScores)
+	newAgent := gb.combineParents(newAgentParents)
+	newAgent = gb.applyMutation(newAgent)
+	return newAgent
 }
 
 // Given the possible parents (a set of agents) and those parents fitness functions,
@@ -83,7 +101,7 @@ func (gb *GeneticBreeder) selectParents(possibleParents []*agent.Agent, parentSc
 	numParents := int(gb.numParentsDistribution.Rand())
 
 	// Create a distribution (with random seed) to select parents, based on
-	// parent fitness
+	// parent fitness.
 	parentSelectionSource := gb.randomGenerator.Uint64()
 	parentSelectionDistribution := distuv.NewCategorical(parentScores, rand.NewSource(parentSelectionSource))
 	// Now we can select a number of selectedParents based on these probabilities
