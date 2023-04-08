@@ -1,4 +1,4 @@
-package basictest
+package basicsystem
 
 import (
 	agent "OCSS/FoosballGeneticLearning/pkg/Agent"
@@ -13,23 +13,23 @@ const (
 	NUM_AGENTS_PER_SIMULATION = 1
 )
 
-type TestSystem struct {
+type BasicSystem struct {
 }
 
-func (system *TestSystem) NumPercepts() int {
+func (system *BasicSystem) NumPercepts() int {
 	return NUM_PERCEPTS
 }
-func (system *TestSystem) NumActions() int {
+func (system *BasicSystem) NumActions() int {
 	return NUM_ACTIONS
 }
-func (system *TestSystem) NumAgentsPerSimulation() int {
+func (system *BasicSystem) NumAgentsPerSimulation() int {
 	return NUM_AGENTS_PER_SIMULATION
 }
 
 // Returns the initial state of the system
 //
 // In this case it is very boring - the state is always 1.0 flat
-func (system *TestSystem) InitializeState() *systemstate.SystemState {
+func (system *BasicSystem) InitializeState() *systemstate.SystemState {
 	return &systemstate.SystemState{
 		StateVector:   mat.NewVecDense(system.NumPercepts(), []float64{1.0}),
 		TerminalState: false,
@@ -45,7 +45,7 @@ func (system *TestSystem) InitializeState() *systemstate.SystemState {
 //
 // The implementation here is very boring - we immediately call the simulation done (terminal = true)
 // and set the score of the agent to the sum of the action vector.
-func (system *TestSystem) AdvanceState(state *systemstate.SystemState, agents []*agent.Agent) {
+func (system *BasicSystem) AdvanceState(state *systemstate.SystemState, agents []*agent.Agent) {
 	agentActions := agent.GetAllAgentActions(agents, state.StateVector)
 	state.TerminalState = true
 	agentScore := 0.0
