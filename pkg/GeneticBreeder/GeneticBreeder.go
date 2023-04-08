@@ -63,6 +63,14 @@ func (gb *GeneticBreeder) NextGeneration(currentGeneration []*agent.Agent) []*ag
 	for agentIndex := range currentGeneration {
 		generationScores[agentIndex] = currentGeneration[agentIndex].Score
 	}
+
+	minimumScore := utils.MinElementInSlice(generationScores)
+	if minimumScore < 0 {
+		for index := range generationScores {
+			generationScores[index] -= minimumScore
+		}
+	}
+
 	for agentIndex := range newGeneration {
 		newAgentParents := gb.selectParents(currentGeneration, generationScores)
 		newAgent := gb.combineParents(newAgentParents)
