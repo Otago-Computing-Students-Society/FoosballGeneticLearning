@@ -1,9 +1,10 @@
 package multiagentsystem
 
 import (
-	manager "OCSS/FoosballGeneticLearning/pkg/Manager"
 	"os"
 	"testing"
+
+	manager "github.com/Otago-Computer-Science-Society/Foosball-Genetic-Learning/pkg/Manager"
 )
 
 func TestMultiAgentSystem(t *testing.T) {

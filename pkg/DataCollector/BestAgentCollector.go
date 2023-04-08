@@ -1,8 +1,9 @@
 package datacollector
 
 import (
-	agent "OCSS/FoosballGeneticLearning/pkg/Agent"
 	"path"
+
+	agent "github.com/Otago-Computer-Science-Society/Foosball-Genetic-Learning/pkg/Agent"
 
 	"github.com/hmcalister/gonum-matrix-io/pkg/gonumio"
 	"github.com/xitongsys/parquet-go/source"

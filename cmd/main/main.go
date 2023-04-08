@@ -1,8 +1,8 @@
 package main
 
 import (
-	sys "OCSS/FoosballGeneticLearning/cmd/main/multiAgentSystem"
-	manager "OCSS/FoosballGeneticLearning/pkg/Manager"
+	sys "github.com/Otago-Computer-Science-Society/Foosball-Genetic-Learning/cmd/main/multiAgentSystem"
+	manager "github.com/Otago-Computer-Science-Society/Foosball-Genetic-Learning/pkg/Manager"
 )
 
 func main() {

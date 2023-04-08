@@ -1,8 +1,8 @@
 package system
 
 import (
-	agent "OCSS/FoosballGeneticLearning/pkg/Agent"
-	systemstate "OCSS/FoosballGeneticLearning/pkg/SystemState"
+	agent "github.com/Otago-Computer-Science-Society/Foosball-Genetic-Learning/pkg/Agent"
+	systemstate "github.com/Otago-Computer-Science-Society/Foosball-Genetic-Learning/pkg/SystemState"
 )
 
 type System interface {

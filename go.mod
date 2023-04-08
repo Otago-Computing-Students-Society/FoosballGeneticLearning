@@ -1,4 +1,4 @@
-module OCSS/FoosballGeneticLearning
+module github.com/Otago-Computer-Science-Society/Foosball-Genetic-Learning
 
 go 1.20
 
