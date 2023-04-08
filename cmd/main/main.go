@@ -1,13 +1,13 @@
 package main
 
 import (
-	sys "OCSS/FoosballGeneticLearning/cmd/main/multiAgentTest"
+	sys "OCSS/FoosballGeneticLearning/cmd/main/multiAgentSystem"
 	manager "OCSS/FoosballGeneticLearning/pkg/Manager"
 )
 
 func main() {
-	targetSystem := sys.TestSystem{}
-	manager := manager.NewManager(&targetSystem, 100)
+	targetSystem := sys.MultiAgentSystem{}
+	manager := manager.NewManager(&targetSystem, 100, true)
 	for generationIndex := 0; generationIndex < 1000; generationIndex++ {
 		manager.SimulateGeneration()
 	}
