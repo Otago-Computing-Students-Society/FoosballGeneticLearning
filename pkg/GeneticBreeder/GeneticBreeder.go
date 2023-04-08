@@ -45,7 +45,7 @@ func NewGeneticBreeder(randomSource rand.Source) *GeneticBreeder {
 		randomGenerator:             rand.New(randomSource),
 		numParentsDistribution:      numParentsDistribution,
 		kCrossoverDistribution:      kCrossoverDistribution,
-		mutationRate:                0.01,
+		mutationRate:                math.Pow10(-6),
 		mutationSegmentDistribution: mutationSegmentDistribution,
 	}
 }
