@@ -79,10 +79,10 @@ const (
 	SCORING_SCORE = 100.0
 
 	// How much score is given for bouncing
-	BOUNCE_SCORE = 1.0
+	BOUNCE_SCORE = 0.0
 
 	// Score given for being "in front of" ball
-	READY_SCORE = 0.0
+	READY_SCORE = 1.0
 )
 
 // Given a velocity vector that is bouncing off a surface (with given normal)
@@ -215,8 +215,8 @@ func (system *PongSystem) AdvanceState(state *systemstate.SystemState, agents []
 
 	paddle0Velocity = utils.ClipToBounds(paddle0Velocity, -MAX_PADDLE_VELOCITY, MAX_PADDLE_VELOCITY)
 	paddle1Velocity = utils.ClipToBounds(paddle1Velocity, -MAX_PADDLE_VELOCITY, MAX_PADDLE_VELOCITY)
-	paddle0Position = utils.ClipToBounds(paddle0Position+paddle0Velocity, -GAME_Y_DIMENSION, GAME_Y_DIMENSION)
-	paddle1Position = utils.ClipToBounds(paddle1Position+paddle1Velocity, -GAME_Y_DIMENSION, GAME_Y_DIMENSION)
+	paddle0Position = utils.ClipToBounds(paddle0Position+TIME_DELTA*paddle0Velocity, -GAME_Y_DIMENSION, GAME_Y_DIMENSION)
+	paddle1Position = utils.ClipToBounds(paddle1Position+TIME_DELTA*paddle1Velocity, -GAME_Y_DIMENSION, GAME_Y_DIMENSION)
 
 	// Reflect ball off bottom wall
 	if ballY <= -0.5 {
