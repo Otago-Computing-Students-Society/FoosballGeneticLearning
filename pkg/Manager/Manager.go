@@ -80,6 +80,10 @@ func NewManager(system system.System, numSimulationsPerGeneration int, geneticBr
 }
 
 // Simulate a single generation of the system, updating the data writers and breeding the next generation
+//
+// simulationPerGeneration defines how many simulations to run before tallying up the agents
+// scores and breeding a new generation. A large number is better, as it averages agent
+// performance.
 func (manager *Manager) SimulateGeneration(simulationsPerGeneration int) {
 	defer func() { manager.generationIndex += 1 }()
 	manager.logger.Printf("STARTING SIMULATION OF GENERATION %v\n", manager.generationIndex)
@@ -87,13 +91,19 @@ func (manager *Manager) SimulateGeneration(simulationsPerGeneration int) {
 
 	// Keep a waitgroup to keep track of how many simulations have finished
 	var simulationWaitGroup sync.WaitGroup
+
+	// Use a progressbar to track how far through the simulations we are.
+	// If we are only doing a single generation, use a silent progress bar instead
 	var simulationProgressBar *progressbar.ProgressBar
 	if simulationsPerGeneration > 1 {
 		simulationProgressBar = progressbar.Default(int64(simulationsPerGeneration), "SIMULATIONS")
 	} else {
 		simulationProgressBar = progressbar.DefaultSilent(int64(simulationsPerGeneration))
 	}
+
+	// Simulate potentially many times
 	for simulationIndex := 0; simulationIndex < simulationsPerGeneration; simulationIndex++ {
+		// Shuffle the agents (to avoid bias)
 		utils.ShuffleSlice(manager.randomGenerator, manager.currentGeneration)
 		// Actually start all the simulations
 		for simulationIndex := 0; simulationIndex < manager.numSimulationsPerGeneration; simulationIndex++ {
@@ -118,6 +128,8 @@ func (manager *Manager) SimulateGeneration(simulationsPerGeneration int) {
 			bestAgent = agent
 		}
 	}
+
+	// With the best agent, simulate against self (once) and save the result
 	manager.logger.Printf("BEST AGENT SCORE: %v\n", bestAgent.Score)
 	manager.logger.Printf("SIMULATING BEST AGENT AGAINST SELF")
 	simulationDataCollector := datacollector.NewSimulationDataCollector(DATA_DIRECTORY, "BestAgentSimulation.pq")
@@ -125,7 +137,7 @@ func (manager *Manager) SimulateGeneration(simulationsPerGeneration int) {
 	simulationDataCollector.WriteStop()
 	manager.logger.Printf("FINISHED BEST AGENT SIMULATION")
 
-	// Put these scores into parquet files
+	// Put data into parquet files
 	manager.generationEndDataCollector.CollectGenerationEndData(manager.currentGeneration)
 	manager.bestAgentDataCollector.CollectBestAgentData(bestAgent)
 
