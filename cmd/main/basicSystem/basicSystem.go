@@ -48,6 +48,7 @@ func (system *BasicSystem) InitializeState() *systemstate.SystemState {
 func (system *BasicSystem) AdvanceState(state *systemstate.SystemState, agents []*agent.Agent) {
 	agentActions := agent.GetAllAgentActions(agents, state.StateVector)
 	state.TerminalState = true
+	state.StateIndex += 1
 	agentScore := 0.0
 	for _, elem := range agentActions[0].RawVector().Data {
 		agentScore += elem
