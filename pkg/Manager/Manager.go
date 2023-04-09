@@ -15,6 +15,7 @@ import (
 	simulator "github.com/Otago-Computer-Science-Society/FoosballGeneticLearning/pkg/Simulator"
 	system "github.com/Otago-Computer-Science-Society/FoosballGeneticLearning/pkg/System"
 	"github.com/Otago-Computer-Science-Society/FoosballGeneticLearning/pkg/utils"
+	"github.com/schollz/progressbar/v3"
 	"golang.org/x/exp/rand"
 )
 
@@ -86,6 +87,12 @@ func (manager *Manager) SimulateGeneration(simulationsPerGeneration int) {
 
 	// Keep a waitgroup to keep track of how many simulations have finished
 	var simulationWaitGroup sync.WaitGroup
+	var simulationProgressBar *progressbar.ProgressBar
+	if simulationsPerGeneration > 1 {
+		simulationProgressBar = progressbar.Default(int64(simulationsPerGeneration), "SIMULATIONS")
+	} else {
+		simulationProgressBar = progressbar.DefaultSilent(int64(simulationsPerGeneration))
+	}
 	for simulationIndex := 0; simulationIndex < simulationsPerGeneration; simulationIndex++ {
 		utils.ShuffleSlice(manager.randomGenerator, manager.currentGeneration)
 		// Actually start all the simulations
@@ -100,6 +107,7 @@ func (manager *Manager) SimulateGeneration(simulationsPerGeneration int) {
 			}()
 		}
 		simulationWaitGroup.Wait()
+		simulationProgressBar.Add(1)
 	}
 	manager.logger.Println("FINISHED SIMULATING GENERATION")
 
