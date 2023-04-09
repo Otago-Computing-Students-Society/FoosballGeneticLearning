@@ -2,7 +2,12 @@ package utils
 
 import (
 	"math"
+	"os"
 
+	"github.com/xitongsys/parquet-go-source/local"
+	"github.com/xitongsys/parquet-go/parquet"
+	"github.com/xitongsys/parquet-go/source"
+	"github.com/xitongsys/parquet-go/writer"
 	"golang.org/x/exp/constraints"
 	"golang.org/x/exp/rand"
 )
