@@ -106,7 +106,7 @@ func (gb *GeneticBreeder) NextGeneration(currentGeneration []*agent.Agent) []*ag
 	}
 
 	for carryoverIndex := 0; carryoverIndex < gb.numCarryover; carryoverIndex++ {
-		newGeneration[carryoverIndex] = currentGeneration[carryoverIndex]
+		newGeneration[carryoverIndex].Chromosome = currentGeneration[carryoverIndex].Chromosome
 	}
 
 	return newGeneration
