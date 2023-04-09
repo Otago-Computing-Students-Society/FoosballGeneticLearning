@@ -6,15 +6,12 @@ import (
 	"os"
 	"path"
 	"sync"
-	"time"
 
 	agent "github.com/Otago-Computer-Science-Society/FoosballGeneticLearning/pkg/Agent"
 	datacollector "github.com/Otago-Computer-Science-Society/FoosballGeneticLearning/pkg/DataCollector"
 	geneticbreeder "github.com/Otago-Computer-Science-Society/FoosballGeneticLearning/pkg/GeneticBreeder"
 	simulator "github.com/Otago-Computer-Science-Society/FoosballGeneticLearning/pkg/Simulator"
 	system "github.com/Otago-Computer-Science-Society/FoosballGeneticLearning/pkg/System"
-
-	"golang.org/x/exp/rand"
 )
 
 const (
@@ -35,8 +32,10 @@ type Manager struct {
 
 // Create a new manager given the system that is to be learned, and the number of simulations to run per generation
 //
-// Note the system given must fully implement the System interface in `pkg/system`
-func NewManager(system system.System, numSimulationsPerGeneration int, verbose bool) *Manager {
+// System given must fully implement the System interface in `pkg/system`
+// numSimulationsPerGeneration determines how many simulations will be run (and hence the number of agents)
+// verbose is a bool flag determining if logs are printed to stdout as well as the log file
+func NewManager(system system.System, numSimulationsPerGeneration int, geneticBreeder *geneticbreeder.GeneticBreeder, verbose bool) *Manager {
 	os.MkdirAll(path.Dir(DATA_DIRECTORY), 0700)
 	os.MkdirAll(path.Dir(LOG_FILE_PATH), 0700)
 
@@ -58,8 +57,6 @@ func NewManager(system system.System, numSimulationsPerGeneration int, verbose b
 	for agentIndex := range currentGeneration {
 		currentGeneration[agentIndex] = agent.NewRandomGaussianAgent(system.NumActions(), system.NumPercepts())
 	}
-
-	geneticBreeder := geneticbreeder.NewGeneticBreeder(rand.NewSource(uint64(time.Now().Nanosecond())))
 
 	return &Manager{
 		system:                      system,
