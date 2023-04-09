@@ -18,11 +18,10 @@ func TestBasicSystem(t *testing.T) {
 		rand.NewSource(uint64(time.Now().Nanosecond())),
 		[]float64{0.0, 0.0, 0.5, 0.5},
 		[]float64{0.0, 0.0, 0.0, 0.2, 0.2, 0.2, 0.2, 0.2},
+		0,
 		math.Pow10(-6))
 	manager := manager.NewManager(&targetSystem, 100, geneticBreeder, false)
-	for generationIndex := 0; generationIndex < 100; generationIndex++ {
-		manager.SimulateGeneration()
-	}
+	manager.SimulateManyGenerations(100)
 
 	os.RemoveAll("data")
 	os.RemoveAll("logs")

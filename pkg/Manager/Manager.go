@@ -114,3 +114,20 @@ func (manager *Manager) SimulateGeneration() {
 	manager.currentGeneration = manager.geneticBreeder.NextGeneration(manager.currentGeneration)
 	manager.logger.Printf("--------------------------------------------------------------------------------")
 }
+
+// Simulate many generations at once, with handling for SIGINT
+func (manager *Manager) SimulateManyGenerations(numGenerations int) {
+	sigintChannel := make(chan os.Signal, 1)
+	signal.Notify(sigintChannel, os.Interrupt)
+simulationGenerationLoop:
+	for generationIndex := 0; generationIndex < numGenerations; generationIndex++ {
+		select {
+		case <-sigintChannel:
+			manager.logger.Println("GOT KEYBOARD INTERRUPT")
+			break simulationGenerationLoop
+		default:
+		}
+		manager.SimulateGeneration()
+	}
+}
+
