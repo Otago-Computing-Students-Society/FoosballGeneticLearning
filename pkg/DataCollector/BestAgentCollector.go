@@ -4,6 +4,7 @@ import (
 	"path"
 
 	agent "github.com/Otago-Computer-Science-Society/FoosballGeneticLearning/pkg/Agent"
+	"github.com/Otago-Computer-Science-Society/FoosballGeneticLearning/pkg/utils"
 
 	"github.com/hmcalister/gonum-matrix-io/pkg/gonumio"
 	"github.com/xitongsys/parquet-go/source"
@@ -27,7 +28,7 @@ type BestAgentDataCollector struct {
 
 // Create a new BestAgentDataCollector for storing information on the best agent in a generation
 func NewBestAgentDataCollector(dataDirectory string) *BestAgentDataCollector {
-	fileHandle, dataWriter := newParquetWriter(path.Join(dataDirectory, bestAgentDataFile), new(bestAgentData))
+	fileHandle, dataWriter := utils.NewParquetWriter(path.Join(dataDirectory, bestAgentDataFile), new(bestAgentData))
 	return &BestAgentDataCollector{
 		dataDirectory: dataDirectory,
 		dataWriter:    dataWriter,
@@ -42,4 +43,14 @@ func (dc *BestAgentDataCollector) CollectBestAgentData(bestAgent *agent.Agent) {
 		Score: bestAgent.Score,
 	})
 	gonumio.SaveMatrix(bestAgent.Chromosome, path.Join(dc.dataDirectory, bestAgentChromosomeFile))
+}
+
+func (dc *BestAgentDataCollector) WriteStop() error {
+	if err := dc.dataWriter.WriteStop(); err != nil {
+		return err
+	}
+	if err := (*dc.fileHandle).Close(); err != nil {
+		return err
+	}
+	return nil
 }
