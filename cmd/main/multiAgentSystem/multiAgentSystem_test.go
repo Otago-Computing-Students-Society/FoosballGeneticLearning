@@ -21,7 +21,7 @@ func TestMultiAgentSystem(t *testing.T) {
 		2,
 		math.Pow10(-6))
 	manager := manager.NewManager(&targetSystem, 100, geneticBreeder, false)
-	manager.SimulateManyGenerations(100)
+	manager.SimulateManyGenerations(100, 1)
 
 	os.RemoveAll("data")
 	os.RemoveAll("logs")

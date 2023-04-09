@@ -7,12 +7,15 @@ import (
 	"os/signal"
 	"path"
 	"sync"
+	"time"
 
 	agent "github.com/Otago-Computer-Science-Society/FoosballGeneticLearning/pkg/Agent"
 	datacollector "github.com/Otago-Computer-Science-Society/FoosballGeneticLearning/pkg/DataCollector"
 	geneticbreeder "github.com/Otago-Computer-Science-Society/FoosballGeneticLearning/pkg/GeneticBreeder"
 	simulator "github.com/Otago-Computer-Science-Society/FoosballGeneticLearning/pkg/Simulator"
 	system "github.com/Otago-Computer-Science-Society/FoosballGeneticLearning/pkg/System"
+	"github.com/Otago-Computer-Science-Society/FoosballGeneticLearning/pkg/utils"
+	"golang.org/x/exp/rand"
 )
 
 const (
@@ -26,6 +29,7 @@ type Manager struct {
 	generationIndex             int
 	numSimulationsPerGeneration int
 	currentGeneration           []*agent.Agent
+	randomGenerator             *rand.Rand
 	geneticBreeder              *geneticbreeder.GeneticBreeder
 	bestAgentDataCollector      *datacollector.BestAgentDataCollector
 	generationEndDataCollector  *datacollector.GenerationEndDataCollector
@@ -59,6 +63,8 @@ func NewManager(system system.System, numSimulationsPerGeneration int, geneticBr
 		currentGeneration[agentIndex] = agent.NewRandomGaussianAgent(system.NumActions(), system.NumPercepts())
 	}
 
+	randomGenerator := rand.New(rand.NewSource(uint64(time.Now().Nanosecond())))
+
 	return &Manager{
 		system:                      system,
 		logger:                      logger,
@@ -66,31 +72,35 @@ func NewManager(system system.System, numSimulationsPerGeneration int, geneticBr
 		numSimulationsPerGeneration: numSimulationsPerGeneration,
 		currentGeneration:           currentGeneration,
 		geneticBreeder:              geneticBreeder,
+		randomGenerator:             randomGenerator,
 		bestAgentDataCollector:      datacollector.NewBestAgentDataCollector(DATA_DIRECTORY),
 		generationEndDataCollector:  datacollector.NewGenerationEndCollector(DATA_DIRECTORY),
 	}
 }
 
 // Simulate a single generation of the system, updating the data writers and breeding the next generation
-func (manager *Manager) SimulateGeneration() {
+func (manager *Manager) SimulateGeneration(simulationsPerGeneration int) {
 	defer func() { manager.generationIndex += 1 }()
 	manager.logger.Printf("STARTING SIMULATION OF GENERATION %v\n", manager.generationIndex)
 	numAgentsPerSimulation := manager.system.NumAgentsPerSimulation()
 
 	// Keep a waitgroup to keep track of how many simulations have finished
 	var simulationWaitGroup sync.WaitGroup
-	// Actually start all the simulations
-	for simulationIndex := 0; simulationIndex < manager.numSimulationsPerGeneration; simulationIndex++ {
-		simulationWaitGroup.Add(1)
-		// Find the agents to be used in this simulation
-		simulationAgents := manager.currentGeneration[numAgentsPerSimulation*simulationIndex : numAgentsPerSimulation*(simulationIndex+1)]
-		// Start simulation in very simple anonymous wrapper - to decrement waitgroup when simulation is done
-		go func() {
-			defer simulationWaitGroup.Done()
-			simulator.SimulateSystem(manager.system, simulationAgents)
-		}()
+	for simulationIndex := 0; simulationIndex < simulationsPerGeneration; simulationIndex++ {
+		utils.ShuffleSlice(manager.randomGenerator, manager.currentGeneration)
+		// Actually start all the simulations
+		for simulationIndex := 0; simulationIndex < manager.numSimulationsPerGeneration; simulationIndex++ {
+			simulationWaitGroup.Add(1)
+			// Find the agents to be used in this simulation
+			simulationAgents := manager.currentGeneration[numAgentsPerSimulation*simulationIndex : numAgentsPerSimulation*(simulationIndex+1)]
+			// Start simulation in very simple anonymous wrapper - to decrement waitgroup when simulation is done
+			go func() {
+				defer simulationWaitGroup.Done()
+				simulator.SimulateSystem(manager.system, simulationAgents)
+			}()
+		}
+		simulationWaitGroup.Wait()
 	}
-	simulationWaitGroup.Wait()
 	manager.logger.Println("FINISHED SIMULATING GENERATION")
 
 	// Find the best agent by score
@@ -116,7 +126,7 @@ func (manager *Manager) SimulateGeneration() {
 }
 
 // Simulate many generations at once, with handling for SIGINT
-func (manager *Manager) SimulateManyGenerations(numGenerations int) {
+func (manager *Manager) SimulateManyGenerations(numGenerations int, simulationsPerGeneration int) {
 	sigintChannel := make(chan os.Signal, 1)
 	signal.Notify(sigintChannel, os.Interrupt)
 simulationGenerationLoop:
@@ -127,7 +137,7 @@ simulationGenerationLoop:
 			break simulationGenerationLoop
 		default:
 		}
-		manager.SimulateGeneration()
+		manager.SimulateGeneration(simulationsPerGeneration)
 	}
 }
 
