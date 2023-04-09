@@ -15,6 +15,7 @@ type GeneticBreeder struct {
 	randomGenerator             *rand.Rand
 	numParentsDistribution      distuv.Rander
 	kCrossoverDistribution      distuv.Rander
+	numCarryover                int
 	mutationRate                float64
 	mutationSegmentDistribution distuv.Rander
 }
@@ -29,8 +30,16 @@ type GeneticBreeder struct {
 // kCrossoverWeights is the weightings for randomly picking how many crossovers to induce.
 // For example, []float64{0.0, 0.0, 0.0, 0.2, 0.2, 0.2, 0.2, 0.2} is an equal chance of 3, 4, 5, 6, or 7 crossovers
 //
+// numCarryover is an integer determining how many of the fittest agents in the previous generation are
+// "carried over" into the next generation
+//
 // mutationRate is a float determining the chance of an agent having a mutation occur.
-func NewGeneticBreeder(randomSource rand.Source, numParentsWeights []float64, kCrossoverWeights []float64, mutationRate float64) *GeneticBreeder {
+func NewGeneticBreeder(
+	randomSource rand.Source,
+	numParentsWeights []float64,
+	kCrossoverWeights []float64,
+	numCarryover int,
+	mutationRate float64) *GeneticBreeder {
 	// Define the numParents distribution
 	// // Current implementation has number of parents selected as
 	// 0.5 chance of 2 parents, 0.5 change of 3 parents.
@@ -54,6 +63,7 @@ func NewGeneticBreeder(randomSource rand.Source, numParentsWeights []float64, kC
 		randomGenerator:             rand.New(randomSource),
 		numParentsDistribution:      numParentsDistribution,
 		kCrossoverDistribution:      kCrossoverDistribution,
+		numCarryover:                numCarryover,
 		mutationRate:                mutationRate,
 		mutationSegmentDistribution: mutationSegmentDistribution,
 	}
@@ -68,20 +78,35 @@ func (gb *GeneticBreeder) NextGeneration(currentGeneration []*agent.Agent) []*ag
 	numAgents := len(currentGeneration)
 	newGeneration := make([]*agent.Agent, numAgents)
 
+	sort.Slice(currentGeneration, func(i, j int) bool {
+		return currentGeneration[i].Score > currentGeneration[j].Score
+	})
+
 	generationScores := make([]float64, len(currentGeneration))
 	for agentIndex := range currentGeneration {
 		generationScores[agentIndex] = currentGeneration[agentIndex].Score
 	}
 
-	minimumScore := utils.MinElementInSlice(generationScores)
+	minimumScore := currentGeneration[len(currentGeneration)-1].Score
 	if minimumScore < 0 {
 		for index := range generationScores {
 			generationScores[index] -= minimumScore
 		}
 	}
+	maximumScore := currentGeneration[0].Score
+	if maximumScore <= 0.0 {
+		for index := range generationScores {
+			generationScores[index] -= maximumScore
+			generationScores[index] += 1.0
+		}
+	}
 
 	for agentIndex := range newGeneration {
 		newGeneration[agentIndex] = gb.breedNewAgent(currentGeneration, generationScores)
+	}
+
+	for carryoverIndex := 0; carryoverIndex < gb.numCarryover; carryoverIndex++ {
+		newGeneration[carryoverIndex] = currentGeneration[carryoverIndex]
 	}
 
 	return newGeneration
