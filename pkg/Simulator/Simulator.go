@@ -25,6 +25,7 @@ func SimulateSystem(system system.System, agents []*agent.Agent) {
 // Simulate the given system until state is terminal
 // Save each state to a file for easy inspection
 func SimulateSystemWithSave(system system.System, agents []*agent.Agent, simulationDataCollector *datacollector.SimulationDataCollector) {
+
 	state := system.InitializeState()
 	simulationDataCollector.CollectSimulationData(state)
 
@@ -35,6 +36,6 @@ func SimulateSystemWithSave(system system.System, agents []*agent.Agent, simulat
 			break
 		}
 		system.AdvanceState(state, agents)
-		simulationDataCollector.CollectSimulationData(state)
+		simulationDataCollector.CollectSimulationData(state.DeepCopyState())
 	}
 }
