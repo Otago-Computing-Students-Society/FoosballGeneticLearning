@@ -1,6 +1,7 @@
 package manager
 
 import (
+	"errors"
 	"io"
 	"log"
 	"os"
@@ -84,8 +85,11 @@ func NewManager(system system.System, numSimulationsPerGeneration int, geneticBr
 // simulationPerGeneration defines how many simulations to run before tallying up the agents
 // scores and breeding a new generation. A large number is better, as it averages agent
 // performance.
-func (manager *Manager) SimulateGeneration(simulationsPerGeneration int) {
+func (manager *Manager) SimulateGeneration(simulationsPerGeneration int) error {
 	defer func() { manager.generationIndex += 1 }()
+	sigintChannel := make(chan os.Signal, 1)
+	signal.Notify(sigintChannel, os.Interrupt)
+
 	manager.logger.Printf("STARTING SIMULATION OF GENERATION %v\n", manager.generationIndex)
 	numAgentsPerSimulation := manager.system.NumAgentsPerSimulation()
 
@@ -103,6 +107,12 @@ func (manager *Manager) SimulateGeneration(simulationsPerGeneration int) {
 
 	// Simulate potentially many times
 	for simulationIndex := 0; simulationIndex < simulationsPerGeneration; simulationIndex++ {
+		select {
+		case <-sigintChannel:
+			manager.logger.Println("GOT KEYBOARD INTERRUPT")
+			return errors.New("got keyboard interrupt")
+		default:
+		}
 		// Shuffle the agents (to avoid bias)
 		utils.ShuffleSlice(manager.randomGenerator, manager.currentGeneration)
 		// Actually start all the simulations
@@ -143,21 +153,17 @@ func (manager *Manager) SimulateGeneration(simulationsPerGeneration int) {
 
 	manager.currentGeneration = manager.geneticBreeder.NextGeneration(manager.currentGeneration)
 	manager.logger.Printf("--------------------------------------------------------------------------------")
+	return nil
 }
 
 // Simulate many generations at once, with handling for SIGINT
 func (manager *Manager) SimulateManyGenerations(numGenerations int, simulationsPerGeneration int) {
-	sigintChannel := make(chan os.Signal, 1)
-	signal.Notify(sigintChannel, os.Interrupt)
-simulationGenerationLoop:
+	var err error
 	for generationIndex := 0; generationIndex < numGenerations; generationIndex++ {
-		select {
-		case <-sigintChannel:
-			manager.logger.Println("GOT KEYBOARD INTERRUPT")
-			break simulationGenerationLoop
-		default:
+		err = manager.SimulateGeneration(simulationsPerGeneration)
+		if err != nil {
+			break
 		}
-		manager.SimulateGeneration(simulationsPerGeneration)
 	}
 }
 
