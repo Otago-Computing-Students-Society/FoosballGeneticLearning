@@ -131,3 +131,8 @@ simulationGenerationLoop:
 	}
 }
 
+// Flush contents of data collectors to disk and safely close all files
+func (manager *Manager) WriteStop() {
+	manager.bestAgentDataCollector.WriteStop()
+	manager.generationEndDataCollector.WriteStop()
+}
