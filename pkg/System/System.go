@@ -22,9 +22,15 @@ type System interface {
 	// Defines the function to advance the system state forward a step,
 	// given the agents in this state.
 	//
+	// As a general rule, all updates to the system state must be manual.
+	// This includes getting the agent actions, setting the agent scores,
+	// and updating the state index.
+	//
 	// Note you must get the actions of the agents manually (see `agent/GetAllAgentActions`)
 	//
 	// Note you must manually update the score of each agent in this method. This is vital!!
+	//
+	// You must also manually update the state index
 	//
 	// # Arguments
 	//
