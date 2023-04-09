@@ -1,23 +1,19 @@
 package agent
 
 import (
-	systemstate "github.com/Otago-Computer-Science-Society/FoosballGeneticLearning/pkg/SystemState"
-
 	"gonum.org/v1/gonum/mat"
 	"gonum.org/v1/gonum/stat/distuv"
 )
 
 type Agent struct {
-	Chromosome   *mat.Dense
-	AgentHistory systemstate.StateHistory
-	Score        float64
+	Chromosome *mat.Dense
+	Score      float64
 }
 
 func NewAgent(chromosome *mat.Dense) *Agent {
 	return &Agent{
-		Chromosome:   chromosome,
-		AgentHistory: make(systemstate.StateHistory, 0),
-		Score:        0.0,
+		Chromosome: chromosome,
+		Score:      0.0,
 	}
 }
 

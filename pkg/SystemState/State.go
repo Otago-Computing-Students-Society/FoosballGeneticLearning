@@ -7,5 +7,3 @@ type SystemState struct {
 	StateIndex    int
 	TerminalState bool
 }
-
-type StateHistory []*SystemState
