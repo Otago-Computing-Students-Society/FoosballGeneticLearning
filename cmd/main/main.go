@@ -18,9 +18,9 @@ func main() {
 		rand.NewSource(uint64(time.Now().Nanosecond())),
 		[]float64{0.0, 0.0, 1.0, 1.0},
 		[]float64{0.0, 0.0, 1.0, 1.0, 1.0},
-		5,
+		1,
 		math.Pow10(-6))
 	manager := manager.NewManager(targetSystem, 1000, geneticBreeder, true)
-	manager.SimulateManyGenerations(10, 10)
+	manager.SimulateManyGenerations(100, 10)
 	manager.WriteStop()
 }
