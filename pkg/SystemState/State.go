@@ -7,3 +7,10 @@ type SystemState struct {
 	StateIndex    int
 	TerminalState bool
 }
+
+func (state *SystemState) DeepCopyState() *SystemState {
+	return &SystemState{
+		StateIndex:  state.StateIndex,
+		StateVector: mat.VecDenseCopyOf(state.StateVector),
+	}
+}
