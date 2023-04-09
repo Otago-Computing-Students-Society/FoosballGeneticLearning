@@ -6,7 +6,7 @@ import (
 	system "github.com/Otago-Computer-Science-Society/FoosballGeneticLearning/pkg/System"
 )
 
-const MAXIMUM_SIMULATION_ITERATIONS = 1000000
+const MAXIMUM_SIMULATION_ITERATIONS = 10000
 
 // Simulate the given system until the state is found to be terminal
 func SimulateSystem(system system.System, agents []*agent.Agent) {
