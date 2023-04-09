@@ -4,6 +4,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"os/signal"
 	"path"
 	"sync"
 
@@ -100,6 +101,11 @@ func (manager *Manager) SimulateGeneration() {
 		}
 	}
 	manager.logger.Printf("BEST AGENT SCORE: %v\n", bestAgent.Score)
+	manager.logger.Printf("SIMULATING BEST AGENT AGAINST SELF")
+	simulationDataCollector := datacollector.NewSimulationDataCollector(DATA_DIRECTORY, "BestAgentSimulation.pq")
+	simulator.SimulateSystemWithSave(manager.system, []*agent.Agent{bestAgent, bestAgent}, simulationDataCollector)
+	simulationDataCollector.WriteStop()
+	manager.logger.Printf("FINISHED BEST AGENT SIMULATION")
 
 	// Put these scores into parquet files
 	manager.generationEndDataCollector.CollectGenerationEndData(manager.currentGeneration)
