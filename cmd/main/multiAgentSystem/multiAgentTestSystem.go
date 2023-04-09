@@ -47,6 +47,7 @@ func (system *MultiAgentSystem) InitializeState() *systemstate.SystemState {
 func (system *MultiAgentSystem) AdvanceState(state *systemstate.SystemState, agents []*agent.Agent) {
 	agentActions := agent.GetAllAgentActions(agents, state.StateVector)
 	state.TerminalState = true
+	state.StateIndex += 1
 	for agentIndex := range agents {
 		agentScore := 0.0
 		for _, elem := range agentActions[agentIndex].RawVector().Data {
