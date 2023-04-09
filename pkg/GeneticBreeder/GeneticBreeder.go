@@ -1,7 +1,6 @@
 package geneticbreeder
 
 import (
-	"math"
 	"sort"
 
 	agent "github.com/Otago-Computer-Science-Society/FoosballGeneticLearning/pkg/Agent"
@@ -20,20 +19,29 @@ type GeneticBreeder struct {
 	mutationSegmentDistribution distuv.Rander
 }
 
-func NewGeneticBreeder(randomSource rand.Source) *GeneticBreeder {
+// Create a new genetic breeder with specific parameters
+//
+// randomSource is a random number generator that can be made, for example, with `rand.NewSource(uint64(time.Now().Nanosecond()))`
+//
+// numParentsWeights is the weightings for randomly picking the number of parents during breeding.
+// For example, []float64{0.0, 0.0, 0.5, 0.5} means half chance of 2 parents, and half chance of 3 parents
+//
+// kCrossoverWeights is the weightings for randomly picking how many crossovers to induce.
+// For example, []float64{0.0, 0.0, 0.0, 0.2, 0.2, 0.2, 0.2, 0.2} is an equal chance of 3, 4, 5, 6, or 7 crossovers
+//
+// mutationRate is a float determining the chance of an agent having a mutation occur.
+func NewGeneticBreeder(randomSource rand.Source, numParentsWeights []float64, kCrossoverWeights []float64, mutationRate float64) *GeneticBreeder {
 	// Define the numParents distribution
 	// // Current implementation has number of parents selected as
 	// 0.5 chance of 2 parents, 0.5 change of 3 parents.
 	//
 	// See https://pkg.go.dev/gonum.org/v1/gonum@v0.12.0/stat/distuv#Categorical for explanation
-	numParentsWeights := []float64{0.0, 0.0, 0.5, 0.5}
 	numParentsDistribution := distuv.NewCategorical(numParentsWeights, randomSource)
 
 	// Define the crossover distribution. This should be proportional to the size of
 	// the chromosome, but we can also have a set value (since the proportionality shouldn't be huge)
 	// In this implementation, we have a set probability of some small number for k.
 	// See https://pkg.go.dev/gonum.org/v1/gonum@v0.12.0/stat/distuv#Categorical for explanation
-	kCrossoverWeights := []float64{0.0, 0.0, 0.0, 0.2, 0.2, 0.2, 0.2, 0.2}
 	kCrossoverDistribution := distuv.NewCategorical(kCrossoverWeights, randomSource)
 
 	// Define the mutationSegmentDistribution - which determines how many
@@ -46,7 +54,7 @@ func NewGeneticBreeder(randomSource rand.Source) *GeneticBreeder {
 		randomGenerator:             rand.New(randomSource),
 		numParentsDistribution:      numParentsDistribution,
 		kCrossoverDistribution:      kCrossoverDistribution,
-		mutationRate:                math.Pow10(-6),
+		mutationRate:                mutationRate,
 		mutationSegmentDistribution: mutationSegmentDistribution,
 	}
 }
