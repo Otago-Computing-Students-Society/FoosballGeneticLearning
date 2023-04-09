@@ -21,6 +21,18 @@ func IsElementInSlice[T comparable](slice []T, element T) bool {
 	return false
 }
 
+// Given a current value and bounds on that number
+// Return the clipped value of that number with respect to those bounds
+func ClipToBounds[T constraints.Signed | constraints.Float](currentValue T, lowerBound T, upperBound T) T {
+	if currentValue < lowerBound {
+		return lowerBound
+	}
+	if currentValue > upperBound {
+		return upperBound
+	}
+	return currentValue
+}
+
 // Returns the minimum element of a slice
 //
 // Panics if slice is empty (len = 0)
