@@ -88,6 +88,9 @@ const (
 // Given a velocity vector that is bouncing off a surface (with given normal)
 // update the velocity vector to the velocity after bouncing
 func bounceSpecularly(velocityVector *mat.VecDense, reflectionNormal *mat.VecDense) {
+	// Actually ensure the reflectionNormal is unit
+	reflectionNormal.ScaleVec(1/reflectionNormal.Norm(2), reflectionNormal)
+
 	// Get the unit direction vector of the velocity
 	velocityDirection := mat.VecDenseCopyOf(velocityVector)
 	velocityDirection.ScaleVec(1/velocityVector.Norm(2), velocityVector)
@@ -132,8 +135,8 @@ func (system *PongSystem) InitializeState() *systemstate.SystemState {
 	ballX := 0.0
 	// Ball starts at random Y position
 	ballY := (2*system.randomGenerator.Float64() - 1) * GAME_Y_DIMENSION
-	// Ball has some random initial velocity in both Y direction [-0.5,0.5]
-	ballYVelocity := (2*system.randomGenerator.Float64() - 1) * GAME_Y_DIMENSION
+	// Ball has some random initial velocity in both Y direction [-1.5,-0.5] U [0.5,1.5]
+	ballYVelocity := (0.5 * (system.randomGenerator.Float64() + 1)) * GAME_Y_DIMENSION
 	// Ball has a larger velocity in the X direction, and is randomly set to
 	// either positive or negative X direction [-1.5,-0.5] U [0.5,1.5]
 	ballXVelocity := (0.5 * (system.randomGenerator.Float64() + 1)) * GAME_X_DIMENSION
@@ -228,7 +231,7 @@ func (system *PongSystem) AdvanceState(state *systemstate.SystemState, agents []
 	}
 	// Reflect ball off left paddle if and only if paddle0 is in the way
 	if ballX <= -1.0 && (paddle0Position-PADDLE_SIZE < ballY && ballY < paddle0Position+PADDLE_SIZE) {
-		bounceSpecularly(ballVelocity, mat.NewVecDense(2, []float64{-1.0, 0.0}))
+		bounceSpecularly(ballVelocity, mat.NewVecDense(2, []float64{1.0, 0.0}))
 		agents[0].Score += BOUNCE_SCORE
 		ballX = -0.9
 	}
