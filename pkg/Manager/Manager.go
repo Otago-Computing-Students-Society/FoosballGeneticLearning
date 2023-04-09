@@ -7,12 +7,15 @@ import (
 	"os/signal"
 	"path"
 	"sync"
+	"time"
 
 	agent "github.com/Otago-Computer-Science-Society/FoosballGeneticLearning/pkg/Agent"
 	datacollector "github.com/Otago-Computer-Science-Society/FoosballGeneticLearning/pkg/DataCollector"
 	geneticbreeder "github.com/Otago-Computer-Science-Society/FoosballGeneticLearning/pkg/GeneticBreeder"
 	simulator "github.com/Otago-Computer-Science-Society/FoosballGeneticLearning/pkg/Simulator"
 	system "github.com/Otago-Computer-Science-Society/FoosballGeneticLearning/pkg/System"
+	"github.com/Otago-Computer-Science-Society/FoosballGeneticLearning/pkg/utils"
+	"golang.org/x/exp/rand"
 )
 
 const (
@@ -26,6 +29,7 @@ type Manager struct {
 	generationIndex             int
 	numSimulationsPerGeneration int
 	currentGeneration           []*agent.Agent
+	randomGenerator             *rand.Rand
 	geneticBreeder              *geneticbreeder.GeneticBreeder
 	bestAgentDataCollector      *datacollector.BestAgentDataCollector
 	generationEndDataCollector  *datacollector.GenerationEndDataCollector
@@ -59,6 +63,8 @@ func NewManager(system system.System, numSimulationsPerGeneration int, geneticBr
 		currentGeneration[agentIndex] = agent.NewRandomGaussianAgent(system.NumActions(), system.NumPercepts())
 	}
 
+	randomGenerator := rand.New(rand.NewSource(uint64(time.Now().Nanosecond())))
+
 	return &Manager{
 		system:                      system,
 		logger:                      logger,
@@ -66,6 +72,7 @@ func NewManager(system system.System, numSimulationsPerGeneration int, geneticBr
 		numSimulationsPerGeneration: numSimulationsPerGeneration,
 		currentGeneration:           currentGeneration,
 		geneticBreeder:              geneticBreeder,
+		randomGenerator:             randomGenerator,
 		bestAgentDataCollector:      datacollector.NewBestAgentDataCollector(DATA_DIRECTORY),
 		generationEndDataCollector:  datacollector.NewGenerationEndCollector(DATA_DIRECTORY),
 	}
