@@ -21,6 +21,6 @@ func main() {
 		5,
 		math.Pow10(-6))
 	manager := manager.NewManager(targetSystem, 1000, geneticBreeder, true)
-	manager.SimulateManyGenerations(100, 100)
+	manager.SimulateManyGenerations(10, 10)
 	manager.WriteStop()
 }
