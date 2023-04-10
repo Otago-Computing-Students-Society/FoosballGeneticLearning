@@ -39,6 +39,15 @@ import (
 // For simplicity we may start with the ball bouncing specularly off the paddles, but we could change this later
 
 const (
+	// State vector consists of:
+	// - ballX
+	// - ballY
+	// - ballXVelocity
+	// - ballYVelocity
+	// - paddle0Position
+	// - paddle1Position
+	STATE_VECTOR_LEN = 6
+
 	// Percepts are given in the following order:
 	// - ballX
 	// - ballY
@@ -147,7 +156,7 @@ func (system *PongSystem) InitializeState() *systemstate.SystemState {
 	paddle0Position := 0.0
 	paddle1Position := 0.0
 	return &systemstate.SystemState{
-		StateVector: mat.NewVecDense(system.NumPercepts(), []float64{
+		StateVector: mat.NewVecDense(STATE_VECTOR_LEN, []float64{
 			ballX,
 			ballY,
 			ballXVelocity,
@@ -177,10 +186,20 @@ func (system *PongSystem) AdvanceState(state *systemstate.SystemState, agents []
 	paddle0Position := state.StateVector.AtVec(4)
 	paddle1Position := state.StateVector.AtVec(5)
 
+	// Create the percept vectors
+	perceptVector := mat.NewVecDense(NUM_PERCEPTS, []float64{
+		ballX,
+		ballY,
+		ballXVelocity,
+		ballYVelocity,
+		paddle0Position,
+		paddle1Position,
+	})
+
 	// Because the system is entirely symmetric on the X axis we can pass
 	// The inverse state to agent1 and ensure that all agents
 	// are always playing on the "left"
-	inverseState := mat.NewVecDense(NUM_PERCEPTS, []float64{
+	inversePerceptVector := mat.NewVecDense(NUM_PERCEPTS, []float64{
 		-1.0 * ballX,
 		ballY,
 		-1.0 * ballXVelocity,
@@ -190,8 +209,8 @@ func (system *PongSystem) AdvanceState(state *systemstate.SystemState, agents []
 	})
 
 	// Get agent actions
-	agent0Action := agents[0].GetAction(state.StateVector)
-	agent1Action := agents[1].GetAction(inverseState)
+	agent0Action := agents[0].GetAction(perceptVector)
+	agent1Action := agents[1].GetAction(inversePerceptVector)
 
 	paddle0Velocity := agent0Action.AtVec(0)
 	paddle1Velocity := agent1Action.AtVec(0)
