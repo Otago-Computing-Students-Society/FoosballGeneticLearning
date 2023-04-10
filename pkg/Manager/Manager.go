@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"path"
+	"sort"
 	"sync"
 	"time"
 
@@ -132,18 +133,22 @@ func (manager *Manager) SimulateGeneration(simulationsPerGeneration int) error {
 	manager.logger.Println("FINISHED SIMULATING GENERATION")
 
 	// Find the best agent by score
-	bestAgent := manager.currentGeneration[0]
-	for _, agent := range manager.currentGeneration {
-		if bestAgent.Score < agent.Score {
-			bestAgent = agent
-		}
-	}
+	sort.Slice(manager.currentGeneration, func(i, j int) bool {
+		return manager.currentGeneration[i].Score < manager.currentGeneration[j].Score
+	})
+	bestAgent := manager.currentGeneration[len(manager.currentGeneration)-1]
 
-	// With the best agent, simulate against self (once) and save the result
+	// With the best agent, simulate and save the result
 	manager.logger.Printf("BEST AGENT SCORE: %v\n", bestAgent.Score)
-	manager.logger.Printf("SIMULATING BEST AGENT AGAINST SELF")
+	manager.logger.Printf("SIMULATING BEST AGENT'S ")
+	// Get the top n agents, where n is the number of agents needed for the simulation
+	bestAgentArray := make([]*agent.Agent, manager.system.NumAgentsPerSimulation())
+	for bestAgentIndex := range bestAgentArray {
+		bestAgentArray[bestAgentIndex] = manager.currentGeneration[len(manager.currentGeneration)-bestAgentIndex-1]
+	}
+	// Then simulate these and put data into data collector
 	simulationDataCollector := datacollector.NewSimulationDataCollector(DATA_DIRECTORY, "BestAgentSimulation.pq")
-	simulator.SimulateSystemWithSave(manager.system, []*agent.Agent{bestAgent, bestAgent}, simulationDataCollector)
+	simulator.SimulateSystemWithSave(manager.system, bestAgentArray, simulationDataCollector)
 	simulationDataCollector.WriteStop()
 	manager.logger.Printf("FINISHED BEST AGENT SIMULATION")
 

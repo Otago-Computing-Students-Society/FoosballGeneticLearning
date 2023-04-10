@@ -53,9 +53,8 @@ const (
 	// - ballY
 	// - ballXVelocity
 	// - ballYVelocity
-	// - paddle1Position
-	// - paddle2Position
-	NUM_PERCEPTS = 6
+	// - paddlePosition
+	NUM_PERCEPTS = 5
 
 	// Agent can take exactly 1 action:
 	// - paddleVelocity
@@ -187,30 +186,28 @@ func (system *PongSystem) AdvanceState(state *systemstate.SystemState, agents []
 	paddle1Position := state.StateVector.AtVec(5)
 
 	// Create the percept vectors
-	perceptVector := mat.NewVecDense(NUM_PERCEPTS, []float64{
+	agent0PerceptVector := mat.NewVecDense(NUM_PERCEPTS, []float64{
 		ballX,
 		ballY,
 		ballXVelocity,
 		ballYVelocity,
 		paddle0Position,
-		paddle1Position,
 	})
 
 	// Because the system is entirely symmetric on the X axis we can pass
 	// The inverse state to agent1 and ensure that all agents
 	// are always playing on the "left"
-	inversePerceptVector := mat.NewVecDense(NUM_PERCEPTS, []float64{
+	agent1PerceptVector := mat.NewVecDense(NUM_PERCEPTS, []float64{
 		-1.0 * ballX,
 		ballY,
 		-1.0 * ballXVelocity,
 		ballYVelocity,
-		paddle0Position,
 		paddle1Position,
 	})
 
 	// Get agent actions
-	agent0Action := agents[0].GetAction(perceptVector)
-	agent1Action := agents[1].GetAction(inversePerceptVector)
+	agent0Action := agents[0].GetAction(agent0PerceptVector)
+	agent1Action := agents[1].GetAction(agent1PerceptVector)
 
 	paddle0Velocity := agent0Action.AtVec(0)
 	paddle1Velocity := agent1Action.AtVec(0)
