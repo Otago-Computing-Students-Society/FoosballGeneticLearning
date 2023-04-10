@@ -1,7 +1,15 @@
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import pandas as pd
-import numpy as np
+from GonumMatrixIO import GonumIO
+import argparse
+
+parser = argparse.ArgumentParser(description="Pong Visualization Argument Parser")
+parser.add_argument("--save", help="Save animation to file, rather than showing", action="store_true")
+args = parser.parse_args()
+
+print(f"BEST CHROMOSOME:\n{GonumIO.loadMatrix('data/bestAgentChromosome.bin')}")
+
 
 GAME_X_DIMENSION = 1.0
 GAME_Y_DIMENSION = 0.5
@@ -34,8 +42,9 @@ paddle0, = ax.plot([-GAME_X_DIMENSION,-GAME_X_DIMENSION],[-PADDLE_SIZE, PADDLE_S
 paddle1, = ax.plot([GAME_X_DIMENSION,GAME_X_DIMENSION],[-PADDLE_SIZE, PADDLE_SIZE], linewidth=5)
 ball, = ax.plot(0,0,marker="o", markersize=10)
 
-anim = animation.FuncAnimation(fig, update, frames=1000, interval=1)
-writer = animation.FFMpegWriter(fps=60)
-anim.save(animationSavePath, writer=writer)
-
-# plt.show()
+anim = animation.FuncAnimation(fig, update, frames=len(simulationData), interval=1)
+if args.save:
+    writer = animation.FFMpegWriter(fps=60)
+    anim.save(animationSavePath, writer=writer)
+else:
+    plt.show()
