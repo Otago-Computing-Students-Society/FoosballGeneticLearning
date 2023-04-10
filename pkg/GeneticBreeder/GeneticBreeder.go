@@ -193,6 +193,10 @@ func (gb *GeneticBreeder) combineParents(parents []*agent.Agent) *agent.Agent {
 	crossoverPoints := indexArray[:numCrossovers]
 	sort.Ints(crossoverPoints)
 
+	// We also append the length of the chromosome, so the final segement (i.e. from last crossover to end)
+	// is still copied into the child
+	crossoverPoints = append(crossoverPoints, chromosomeSize)
+
 	// Next we can actually start putting the parent chromosomes together!  Yay!
 	// We should start with random parent, to avoid biasing the fittest parent to the start of the chromosome
 	childChromosomeData := make([]float64, chromosomeSize)
