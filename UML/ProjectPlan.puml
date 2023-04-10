@@ -2,35 +2,26 @@
 
 Class Agent {
     Matrix Chromosome
-    StateHistory history
-    AgentAction GetAgentAction(SystemState)
-}
-
-struct AgentAction {
-    Vector ActionVecto
-}
+    float Score
+    Vector GetAgentAction(SystemState)
+} 
 
 interface System {
     int NumActions
     int NumPercepts
-    SystemState InitalizeState()
-    float ScoreFunction(StateHistory)
-    SystemState AdvanceState(SystemState, AgentActions[])
+    (*SystemState) InitalizeState()
+    AdvanceState(*SystemState, *Agents[])
 }
 
 struct SystemState {
+    int StateIndex
     Vector state
-}
-
-struct StateHistory {
-    SystemState[] history
-    void AddStateToHistory(SystemState)
 }
 
 class Manager {
     int GenerationIndex
-    Agent[] Generation
-    Agent[] BestAgentByGeneration
+    Agent[] CurrentGeneration
+    SimulateGeneration()
 }
 
 class Simulator {
@@ -39,7 +30,6 @@ class Simulator {
 }
 
 class GeneticBreeder {
-    float[] AgentScores
     Agent[] NextGeneration(Agent[])
 }
 
@@ -52,10 +42,7 @@ System -l-* Manager
 GeneticBreeder -u-* Manager
 DataCollector -u-* Manager
 
-Agent *-d- AgentAction
-
-System -u- StateHistory
-StateHistory *-l- SystemState
+Simulator -r- SystemState
 
 Simulator -d- Manager: Concurrent Processing
 
