@@ -4,19 +4,25 @@ import pandas as pd
 from GonumMatrixIO import GonumIO
 import argparse
 
-parser = argparse.ArgumentParser(description="Pong Visualization Argument Parser")
-parser.add_argument("--save", help="Save animation to file, rather than showing", action="store_true")
-args = parser.parse_args()
-
-print(f"BEST CHROMOSOME:\n{GonumIO.loadMatrix('data/bestAgentChromosome.bin')}")
-
+simulationData = pd.read_parquet("data/BestAgentSimulation.pq")
+animationSavePath = "data/animation.mp4"
 
 GAME_X_DIMENSION = 1.0
 GAME_Y_DIMENSION = 0.5
 PADDLE_SIZE = 0.2
 
-simulationData = pd.read_parquet("data/BestAgentSimulation.pq")
-animationSavePath = "data/animation.mp4"
+parser = argparse.ArgumentParser(description="Pong Visualization Argument Parser")
+parser.add_argument("--save", help="Save animation to file, rather than showing", action="store_true")
+parser.add_argument("--numFrames", help="Determine the number of frames to render. If not given, render the entire simulation", action="store", type=int, default=None)
+args = parser.parse_args()
+
+if args.numFrames == None or args.numFrames > len(simulationData):
+    numFrames = len(simulationData)
+else:
+    numFrames = args.numFrames
+
+print(f"BEST CHROMOSOME:\n{GonumIO.loadMatrix('data/bestAgentChromosome.bin')}")
+
 
 def update(index):
     stateVector = simulationData.loc[index, "StateVector"]
@@ -42,7 +48,7 @@ paddle0, = ax.plot([-GAME_X_DIMENSION,-GAME_X_DIMENSION],[-PADDLE_SIZE, PADDLE_S
 paddle1, = ax.plot([GAME_X_DIMENSION,GAME_X_DIMENSION],[-PADDLE_SIZE, PADDLE_SIZE], linewidth=5)
 ball, = ax.plot(0,0,marker="o", markersize=10)
 
-anim = animation.FuncAnimation(fig, update, frames=len(simulationData), interval=1)
+anim = animation.FuncAnimation(fig, update, frames=numFrames, interval=1)
 if args.save:
     writer = animation.FFMpegWriter(fps=60)
     anim.save(animationSavePath, writer=writer)
