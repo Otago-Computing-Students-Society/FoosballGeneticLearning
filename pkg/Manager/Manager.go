@@ -8,7 +8,6 @@ import (
 	"os/signal"
 	"path"
 	"sort"
-	"sync"
 	"time"
 
 	agent "github.com/Otago-Computer-Science-Society/FoosballGeneticLearning/pkg/Agent"
@@ -33,6 +32,7 @@ type Manager struct {
 	numSimulationsPerGeneration int
 	currentGeneration           []*agent.Agent
 	randomGenerator             *rand.Rand
+	numThreads                  int
 	geneticBreeder              *geneticbreeder.GeneticBreeder
 	bestAgentDataCollector      *datacollector.BestAgentDataCollector
 	generationEndDataCollector  *datacollector.GenerationEndDataCollector
@@ -41,9 +41,13 @@ type Manager struct {
 // Create a new manager given the system that is to be learned, and the number of simulations to run per generation
 //
 // System given must fully implement the System interface in `pkg/system`
-// numSimulationsPerGeneration determines how many simulations will be run (and hence the number of agents)
+//
+// numSimulationsPerGeneration defines how many simulations to run before tallying up the agents
+// scores and breeding a new generation. A large number is better, as it averages agent
+// performance.
+//
 // verbose is a bool flag determining if logs are printed to stdout as well as the log file
-func NewManager(system system.System, numSimulationsPerGeneration int, geneticBreeder *geneticbreeder.GeneticBreeder, verbose bool) *Manager {
+func NewManager(system system.System, numSimulationsPerGeneration int, numThreads int, geneticBreeder *geneticbreeder.GeneticBreeder, verbose bool) *Manager {
 	os.MkdirAll(path.Dir(DATA_DIRECTORY), 0700)
 	os.MkdirAll(path.Dir(LOG_FILE_PATH), 0700)
 
@@ -66,6 +70,10 @@ func NewManager(system system.System, numSimulationsPerGeneration int, geneticBr
 		currentGeneration[agentIndex] = agent.NewRandomGaussianAgent(system.NumActions(), system.NumPercepts())
 	}
 
+	if numThreads <= 0 {
+		panic("Number of threads must be a positive integer!")
+	}
+
 	randomGenerator := rand.New(rand.NewSource(uint64(time.Now().Nanosecond())))
 
 	return &Manager{
@@ -75,6 +83,7 @@ func NewManager(system system.System, numSimulationsPerGeneration int, geneticBr
 		numSimulationsPerGeneration: numSimulationsPerGeneration,
 		currentGeneration:           currentGeneration,
 		geneticBreeder:              geneticBreeder,
+		numThreads:                  numThreads,
 		randomGenerator:             randomGenerator,
 		bestAgentDataCollector:      datacollector.NewBestAgentDataCollector(DATA_DIRECTORY),
 		generationEndDataCollector:  datacollector.NewGenerationEndCollector(DATA_DIRECTORY),
