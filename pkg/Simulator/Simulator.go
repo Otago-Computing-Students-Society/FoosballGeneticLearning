@@ -8,6 +8,26 @@ import (
 
 const MAXIMUM_SIMULATION_ITERATIONS = 10000
 
+// Define a wrapper around the simulation functions to allow for easy concurrency
+//
+// This wrapper function is intended to be run as a goroutine, with the agentChannel
+// getting the agents for each simulation.
+//
+// Note that because the simulation affects the agents and state directly, we do not have
+// to return anything from this routine through another channel!
+// Instead we send back only a simple signal through the simulationFinishedSignalChannel.
+// This allows for the manager to count how many simulations have passed
+func ConcurrentSimulationRoutine(system system.System, agentChannel <-chan []*agent.Agent, simulationFinishedSignalChannel chan<- struct{}) {
+	// This loop will take items out of the agentChannel
+	//
+	// Once the agent channel is closed (done by the manager, once all agents are sent),
+	// this loop will exit and the goroutine will terminate
+	for agents := range agentChannel {
+		SimulateSystem(system, agents)
+		simulationFinishedSignalChannel <- struct{}{}
+	}
+}
+
 // Simulate the given system until the state is found to be terminal
 func SimulateSystem(system system.System, agents []*agent.Agent) {
 	state := system.InitializeState()
