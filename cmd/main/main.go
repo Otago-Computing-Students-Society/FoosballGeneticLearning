@@ -20,7 +20,7 @@ func main() {
 		[]float64{0.0, 1.0, 1.0, 1.0},
 		1,
 		math.Pow10(-6))
-	manager := manager.NewManager(targetSystem, 1000, 100, 16, geneticBreeder, true)
+	manager := manager.NewManager(targetSystem, 2500, 10, 16, geneticBreeder, true)
 	manager.SimulateManyGenerations(50)
 	manager.WriteStop()
 }
