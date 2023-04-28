@@ -99,12 +99,12 @@ func NewManager(system system.System, numAgents int, numSimulationsPerGeneration
 // Simulate a single repetition, of which there may be many (always at least one) within a generation
 // This method is not exposed publicly. The intention is for users to call SimulateGeneration instead.
 func (manager *Manager) simulateRepetition() error {
-	numAgentsPerSimulation := manager.system.NumAgentsPerSimulation()
+	numSimulations := len(manager.currentGeneration) / manager.system.NumAgentsPerSimulation()
 
 	// Channel to send collections of agents through to simulation goroutines.
 	// The number of agents sent at once is equal to the number of agents required
 	// for one simulation.
-	agentChannel := make(chan []*agent.Agent, manager.numSimulationsPerGeneration)
+	agentChannel := make(chan []*agent.Agent, numSimulations)
 	// Channel to receive signals (hence generic struct{}) for when a simulation finishes.
 	simulationFinishedSignalChannel := make(chan struct{})
 	// A simple counter of how many simulations are running
@@ -119,10 +119,10 @@ func (manager *Manager) simulateRepetition() error {
 	utils.ShuffleSlice(manager.randomGenerator, manager.currentGeneration)
 
 	// Actually start all the simulations
-	for simulationIndex := 0; simulationIndex < manager.numSimulationsPerGeneration; simulationIndex++ {
+	for simulationIndex := 0; simulationIndex < numSimulations; simulationIndex++ {
 		simulationsRunningCounter += 1
 		// Find the agents to be used in this simulation
-		simulationAgents := manager.currentGeneration[numAgentsPerSimulation*simulationIndex : numAgentsPerSimulation*(simulationIndex+1)]
+		simulationAgents := manager.currentGeneration[manager.system.NumAgentsPerSimulation()*simulationIndex : manager.system.NumAgentsPerSimulation()*(simulationIndex+1)]
 		// Send the agents to the simulators - blocks until agents can be taken
 		agentChannel <- simulationAgents
 	}
