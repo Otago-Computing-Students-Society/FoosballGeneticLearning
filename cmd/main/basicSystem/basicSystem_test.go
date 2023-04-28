@@ -20,8 +20,8 @@ func TestBasicSystem(t *testing.T) {
 		[]float64{0.0, 0.0, 0.0, 0.2, 0.2, 0.2, 0.2, 0.2},
 		0,
 		math.Pow10(-6))
-	manager := manager.NewManager(&targetSystem, 100, geneticBreeder, false)
-	manager.SimulateManyGenerations(100, 1)
+	manager := manager.NewManager(&targetSystem, 100, 8, geneticBreeder, false)
+	manager.SimulateManyGenerations(100)
 
 	os.RemoveAll("data")
 	os.RemoveAll("logs")

@@ -8,7 +8,6 @@ import (
 	"os/signal"
 	"path"
 	"sort"
-	"sync"
 	"time"
 
 	agent "github.com/Otago-Computer-Science-Society/FoosballGeneticLearning/pkg/Agent"
@@ -33,6 +32,7 @@ type Manager struct {
 	numSimulationsPerGeneration int
 	currentGeneration           []*agent.Agent
 	randomGenerator             *rand.Rand
+	numThreads                  int
 	geneticBreeder              *geneticbreeder.GeneticBreeder
 	bestAgentDataCollector      *datacollector.BestAgentDataCollector
 	generationEndDataCollector  *datacollector.GenerationEndDataCollector
@@ -41,9 +41,13 @@ type Manager struct {
 // Create a new manager given the system that is to be learned, and the number of simulations to run per generation
 //
 // System given must fully implement the System interface in `pkg/system`
-// numSimulationsPerGeneration determines how many simulations will be run (and hence the number of agents)
+//
+// numSimulationsPerGeneration defines how many simulations to run before tallying up the agents
+// scores and breeding a new generation. A large number is better, as it averages agent
+// performance.
+//
 // verbose is a bool flag determining if logs are printed to stdout as well as the log file
-func NewManager(system system.System, numSimulationsPerGeneration int, geneticBreeder *geneticbreeder.GeneticBreeder, verbose bool) *Manager {
+func NewManager(system system.System, numSimulationsPerGeneration int, numThreads int, geneticBreeder *geneticbreeder.GeneticBreeder, verbose bool) *Manager {
 	os.MkdirAll(path.Dir(DATA_DIRECTORY), 0700)
 	os.MkdirAll(path.Dir(LOG_FILE_PATH), 0700)
 
@@ -66,6 +70,10 @@ func NewManager(system system.System, numSimulationsPerGeneration int, geneticBr
 		currentGeneration[agentIndex] = agent.NewRandomGaussianAgent(system.NumActions(), system.NumPercepts())
 	}
 
+	if numThreads <= 0 {
+		panic("Number of threads must be a positive integer!")
+	}
+
 	randomGenerator := rand.New(rand.NewSource(uint64(time.Now().Nanosecond())))
 
 	return &Manager{
@@ -75,60 +83,90 @@ func NewManager(system system.System, numSimulationsPerGeneration int, geneticBr
 		numSimulationsPerGeneration: numSimulationsPerGeneration,
 		currentGeneration:           currentGeneration,
 		geneticBreeder:              geneticBreeder,
+		numThreads:                  numThreads,
 		randomGenerator:             randomGenerator,
 		bestAgentDataCollector:      datacollector.NewBestAgentDataCollector(DATA_DIRECTORY),
 		generationEndDataCollector:  datacollector.NewGenerationEndCollector(DATA_DIRECTORY),
 	}
 }
 
+// Simulate a single repetition, of which there may be many (always at least one) within a generation
+// This method is not exposed publicly. The intention is for users to call SimulateGeneration instead.
+func (manager *Manager) simulateRepetition() error {
+	numAgentsPerSimulation := manager.system.NumAgentsPerSimulation()
+
+	// Channel to send collections of agents through to simulation goroutines.
+	// The number of agents sent at once is equal to the number of agents required
+	// for one simulation.
+	agentChannel := make(chan []*agent.Agent, manager.numSimulationsPerGeneration)
+	// Channel to receive signals (hence generic struct{}) for when a simulation finishes.
+	simulationFinishedSignalChannel := make(chan struct{})
+	// A simple counter of how many simulations are running
+	simulationsRunningCounter := 0
+
+	// Create a number of goroutines to handle as simulations
+	for i := 0; i < manager.numThreads; i++ {
+		go simulator.ConcurrentSimulationRoutine(manager.system, agentChannel, simulationFinishedSignalChannel)
+	}
+
+	// Shuffle the agents (to avoid bias)
+	utils.ShuffleSlice(manager.randomGenerator, manager.currentGeneration)
+
+	// Actually start all the simulations
+	for simulationIndex := 0; simulationIndex < manager.numSimulationsPerGeneration; simulationIndex++ {
+		simulationsRunningCounter += 1
+		// Find the agents to be used in this simulation
+		simulationAgents := manager.currentGeneration[numAgentsPerSimulation*simulationIndex : numAgentsPerSimulation*(simulationIndex+1)]
+		// Send the agents to the simulators - blocks until agents can be taken
+		agentChannel <- simulationAgents
+	}
+	close(agentChannel)
+
+	// Count any finished simulations and decrement the simulation counter
+	for range simulationFinishedSignalChannel {
+		simulationsRunningCounter -= 1
+		if simulationsRunningCounter <= 0 {
+			break
+		}
+	}
+
+	return nil
+}
+
 // Simulate a single generation of the system, updating the data writers and breeding the next generation
 //
-// simulationPerGeneration defines how many simulations to run before tallying up the agents
-// scores and breeding a new generation. A large number is better, as it averages agent
-// performance.
-func (manager *Manager) SimulateGeneration(simulationsPerGeneration int) error {
+// simulationPerGeneration
+func (manager *Manager) SimulateGeneration() error {
 	defer func() { manager.generationIndex += 1 }()
 	sigintChannel := make(chan os.Signal, 1)
 	signal.Notify(sigintChannel, os.Interrupt)
 
 	manager.logger.Printf("STARTING SIMULATION OF GENERATION %v\n", manager.generationIndex)
-	numAgentsPerSimulation := manager.system.NumAgentsPerSimulation()
-
-	// Keep a waitgroup to keep track of how many simulations have finished
-	var simulationWaitGroup sync.WaitGroup
 
 	// Use a progressbar to track how far through the simulations we are.
 	// If we are only doing a single generation, use a silent progress bar instead
-	var simulationProgressBar *progressbar.ProgressBar
-	if simulationsPerGeneration > 1 {
-		simulationProgressBar = progressbar.Default(int64(simulationsPerGeneration), "SIMULATIONS")
+	var simulationRepeatsProgressBar *progressbar.ProgressBar
+	if manager.numSimulationsPerGeneration > 1 {
+		simulationRepeatsProgressBar = progressbar.Default(int64(manager.numSimulationsPerGeneration), "SIMULATION REPETITIONS")
 	} else {
-		simulationProgressBar = progressbar.DefaultSilent(int64(simulationsPerGeneration))
+		simulationRepeatsProgressBar = progressbar.DefaultSilent(int64(manager.numSimulationsPerGeneration))
 	}
 
-	// Simulate potentially many times
-	for simulationIndex := 0; simulationIndex < simulationsPerGeneration; simulationIndex++ {
+	// Simulate as many times as required, passing agents through channel to awaiting goroutines
+	for simulationRepeatIndex := 0; simulationRepeatIndex < manager.numSimulationsPerGeneration; simulationRepeatIndex++ {
+		// Handle any keyboard interrupts
 		select {
 		case <-sigintChannel:
 			manager.logger.Println("GOT KEYBOARD INTERRUPT")
 			return errors.New("got keyboard interrupt")
 		default:
 		}
-		// Shuffle the agents (to avoid bias)
-		utils.ShuffleSlice(manager.randomGenerator, manager.currentGeneration)
-		// Actually start all the simulations
-		for simulationIndex := 0; simulationIndex < manager.numSimulationsPerGeneration; simulationIndex++ {
-			simulationWaitGroup.Add(1)
-			// Find the agents to be used in this simulation
-			simulationAgents := manager.currentGeneration[numAgentsPerSimulation*simulationIndex : numAgentsPerSimulation*(simulationIndex+1)]
-			// Start simulation in very simple anonymous wrapper - to decrement waitgroup when simulation is done
-			go func() {
-				defer simulationWaitGroup.Done()
-				simulator.SimulateSystem(manager.system, simulationAgents)
-			}()
+
+		err := manager.simulateRepetition()
+		if err != nil {
+			return err
 		}
-		simulationWaitGroup.Wait()
-		simulationProgressBar.Add(1)
+		simulationRepeatsProgressBar.Add(1)
 	}
 	manager.logger.Println("FINISHED SIMULATING GENERATION")
 
@@ -161,11 +199,11 @@ func (manager *Manager) SimulateGeneration(simulationsPerGeneration int) error {
 	return nil
 }
 
-// Simulate many generations at once, with handling for SIGINT
-func (manager *Manager) SimulateManyGenerations(numGenerations int, simulationsPerGeneration int) {
+// Simulate many generations in a loop
+func (manager *Manager) SimulateManyGenerations(numGenerations int) {
 	var err error
 	for generationIndex := 0; generationIndex < numGenerations; generationIndex++ {
-		err = manager.SimulateGeneration(simulationsPerGeneration)
+		err = manager.SimulateGeneration()
 		if err != nil {
 			break
 		}
