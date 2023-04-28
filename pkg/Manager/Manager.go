@@ -42,12 +42,15 @@ type Manager struct {
 //
 // System given must fully implement the System interface in `pkg/system`
 //
+// numAgents defines how many agents should be created. This should be a reasonable number for your system!
+// i.e. if your system requires 2 agents per simulation, this number should be even.
+//
 // numSimulationsPerGeneration defines how many simulations to run before tallying up the agents
 // scores and breeding a new generation. A large number is better, as it averages agent
 // performance.
 //
 // verbose is a bool flag determining if logs are printed to stdout as well as the log file
-func NewManager(system system.System, numSimulationsPerGeneration int, numThreads int, geneticBreeder *geneticbreeder.GeneticBreeder, verbose bool) *Manager {
+func NewManager(system system.System, numAgents int, numSimulationsPerGeneration int, numThreads int, geneticBreeder *geneticbreeder.GeneticBreeder, verbose bool) *Manager {
 	os.MkdirAll(path.Dir(DATA_DIRECTORY), 0700)
 	os.MkdirAll(path.Dir(LOG_FILE_PATH), 0700)
 
@@ -64,7 +67,6 @@ func NewManager(system system.System, numSimulationsPerGeneration int, numThread
 	}
 	logger := log.New(multiWriter, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
 
-	numAgents := system.NumAgentsPerSimulation() * numSimulationsPerGeneration
 	currentGeneration := make([]*agent.Agent, numAgents)
 	for agentIndex := range currentGeneration {
 		currentGeneration[agentIndex] = agent.NewRandomGaussianAgent(system.NumActions(), system.NumPercepts())
