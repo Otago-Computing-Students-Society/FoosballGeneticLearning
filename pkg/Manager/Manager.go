@@ -76,6 +76,10 @@ func NewManager(system system.System, numAgents int, numSimulationsPerGeneration
 		panic("Number of threads must be a positive integer!")
 	}
 
+	if numAgents%system.NumAgentsPerSimulation() != 0 {
+		panic("numAgents must be divisible by system.NumAgentsPerSimulation!")
+	}
+
 	randomGenerator := rand.New(rand.NewSource(uint64(time.Now().Nanosecond())))
 
 	return &Manager{
