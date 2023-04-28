@@ -26,7 +26,8 @@ const (
 	// 4 - TargetLocationX
 	// 5 - TargetLocationY
 	// 6 - NumTargetLocationsVisited
-	STATE_VECTOR_LEN = 7
+	// 7 - MinimumDistanceToCurrentTargetLocation
+	STATE_VECTOR_LEN = 8
 
 	// An agent will receive:
 	// 0 - AgentX
@@ -38,11 +39,9 @@ const (
 	NUM_PERCEPTS = 6
 
 	// The agent must act on:
-	// 0 - UpThruster
-	// 1 - DownThruster
-	// 2 - LeftThruster
-	// 3 - RightThruster
-	NUM_ACTIONS = 4
+	// 0 - VerticalThruster
+	// 1 - HorizontalThruster
+	NUM_ACTIONS = 2
 
 	// There is only a single agent per simulation
 	NUM_AGENTS_PER_SIMULATION = 1
@@ -55,16 +54,23 @@ const (
 	SIMULATION_BOUND = 100.0
 
 	// Defines how large each step is
-	TIME_DELTA = 0.5
+	TIME_DELTA = 0.05
 
 	// Defines how strong gravity is - each frame, the agents Y velocity is decremented by some amount to simulate this.
-	GRAVITY = 0.9
+	GRAVITY = 0.0
+
+	// Defines the friction term for the agent.
+	// The agents velocity is multiplied by 1-FRICTION_CONSTANT at each step.
+	FRICTION_CONSTANT = 0.0
 
 	// Defines how powerful the agents thrust is allowed to be.
-	MAX_THRUST = 1.0
+	MAX_THRUST = 5.0
 
 	// Defines the radius in which the agent can pick up the reward.
-	AGENT_RADIUS = 1.0
+	AGENT_RADIUS = 10.0
+
+	// Defines how far the next target state must be from the previous target state
+	MIN_NEXT_TARGET_LOCATION_RADIUS = 25.0
 
 	// Defines how many locations the agent is allowed to visit in a single trial
 	MAX_LOCATIONS = 10
@@ -72,13 +78,16 @@ const (
 	// --------------------------------------------------------------------------------------------
 
 	// Defines the penalty for "losing" (running into the simulation bound)
-	LOSING_PENALTY = -1000
+	LOSING_PENALTY = -0
 
 	// Defines how much reaching a target location is worth.
-	TARGET_LOCATION_REWARD = 0
+	TARGET_LOCATION_REWARD = 1.0
 
 	// Defines how much reward is attributed to moving towards the target location
-	MOVEMENT_TOWARDS_LOCATION_REWARD = 1
+	MOVEMENT_TOWARDS_LOCATION_REWARD = 0.0
+
+	// Defines how much reward is attributed to a single step (motivates agent to finish quickly)
+	STEP_PENALTY = -0.001
 )
 
 // ------------------------------------------------------------------------------------------------
@@ -108,11 +117,13 @@ func (system *FlyingAgentSystem) NumAgentsPerSimulation() int {
 // ------------------------------------------------------------------------------------------------
 
 // Determine the next location of the target location.
-//
-// In future, this function may take the previous target location, to choose a new location sufficiently far away.
-func (system *FlyingAgentSystem) chooseNextTargetLocation() (float64, float64) {
-	targetLocationX := 2*SIMULATION_BOUND*system.randomGenerator.Float64() - SIMULATION_BOUND
-	targetLocationY := 2*SIMULATION_BOUND*system.randomGenerator.Float64() - SIMULATION_BOUND
+func (system *FlyingAgentSystem) chooseNextTargetLocation(previousTargetLocationX, previousTargetLocationY float64) (float64, float64) {
+	targetLocationX := previousTargetLocationX
+	targetLocationY := previousTargetLocationY
+	for math.Hypot(targetLocationX-previousTargetLocationX, targetLocationY-previousTargetLocationY) < MIN_NEXT_TARGET_LOCATION_RADIUS {
+		targetLocationX = 2*SIMULATION_BOUND*system.randomGenerator.Float64() - SIMULATION_BOUND
+		targetLocationY = 2*SIMULATION_BOUND*system.randomGenerator.Float64() - SIMULATION_BOUND
+	}
 	return targetLocationX, targetLocationY
 }
 
@@ -127,8 +138,9 @@ func (system *FlyingAgentSystem) InitializeState() *systemstate.SystemState {
 	agentVelY := 0.0
 
 	// First target location is given by a random number chosen in the valid bounds
-	targetLocationX, targetLocationY := system.chooseNextTargetLocation()
+	targetLocationX, targetLocationY := system.chooseNextTargetLocation(0.0, 0.0)
 	numTargetLocationsVisited := 0.0
+	minimumDistanceToCurrentTargetLocation := math.Hypot(agentX-targetLocationX, agentY-targetLocationY)
 
 	return &systemstate.SystemState{
 		StateVector: mat.NewVecDense(STATE_VECTOR_LEN, []float64{
@@ -139,26 +151,28 @@ func (system *FlyingAgentSystem) InitializeState() *systemstate.SystemState {
 			targetLocationX,
 			targetLocationY,
 			numTargetLocationsVisited,
+			minimumDistanceToCurrentTargetLocation,
 		}),
 		TerminalState: false,
 	}
 }
 
 func (system *FlyingAgentSystem) AdvanceState(state *systemstate.SystemState, agents []*agent.Agent) {
-	agentX := state.StateVector.AtVec(0)
-	agentY := state.StateVector.AtVec(1)
-	agentVelX := state.StateVector.AtVec(2)
-	agentVelY := state.StateVector.AtVec(3)
+	previousAgentX := state.StateVector.AtVec(0)
+	previousAgentY := state.StateVector.AtVec(1)
+	previousAgentVelX := state.StateVector.AtVec(2)
+	previousAgentVelY := state.StateVector.AtVec(3)
 	targetLocationX := state.StateVector.AtVec(4)
 	targetLocationY := state.StateVector.AtVec(5)
 	numTargetLocationsVisited := state.StateVector.AtVec(6)
+	minimumDistanceToCurrentTargetLocation := state.StateVector.AtVec(7)
 
 	// Craft the agent input vector
 	agentPercepts := mat.NewVecDense(NUM_PERCEPTS, []float64{
-		agentX,
-		agentY,
-		agentVelX,
-		agentVelY,
+		previousAgentX,
+		previousAgentY,
+		previousAgentVelX,
+		previousAgentVelY,
 		targetLocationX,
 		targetLocationY,
 	})
@@ -166,47 +180,49 @@ func (system *FlyingAgentSystem) AdvanceState(state *systemstate.SystemState, ag
 	agentAction := agent.GetAction(agentPercepts)
 
 	// Decode the agent action
-	upThruster := agentAction.AtVec(0)
-	downThruster := agentAction.AtVec(1)
-	leftThruster := agentAction.AtVec(2)
-	rightThruster := agentAction.AtVec(3)
+	verticalThruster := agentAction.AtVec(0)
+	horizontalThruster := agentAction.AtVec(1)
 	// Ensure thrusters are in correct bound
-	upThruster = utils.ClipToBounds(upThruster, 0, MAX_THRUST)
-	downThruster = utils.ClipToBounds(downThruster, 0, MAX_THRUST)
-	leftThruster = utils.ClipToBounds(leftThruster, 0, MAX_THRUST)
-	rightThruster = utils.ClipToBounds(rightThruster, 0, MAX_THRUST)
+	verticalThruster = utils.ClipToBounds(verticalThruster, -MAX_THRUST, MAX_THRUST)
+	horizontalThruster = utils.ClipToBounds(horizontalThruster, -MAX_THRUST, MAX_THRUST)
 
 	// Update the agents position and velocities --------------------------------------------------
 
-	newAgentX := agentX + TIME_DELTA*agentVelX
-	newAgentY := agentY + TIME_DELTA*agentVelY
+	newAgentX := previousAgentX + TIME_DELTA*previousAgentVelX
+	newAgentY := previousAgentY + TIME_DELTA*previousAgentVelY
 
-	newAgentVelX := agentVelX + TIME_DELTA*(rightThruster-leftThruster)
-	newAgentVelY := agentVelY + TIME_DELTA*(upThruster-downThruster-GRAVITY)
+	newAgentVelY := (1 - FRICTION_CONSTANT) * (previousAgentVelY + TIME_DELTA*(verticalThruster-GRAVITY))
+	newAgentVelX := (1 - FRICTION_CONSTANT) * (previousAgentVelX + TIME_DELTA*horizontalThruster)
 
 	// Check over agent rewards -------------------------------------------------------------------
 
 	// Check if agent have left simulation
-	if newAgentX < -SIMULATION_BOUND || newAgentX > SIMULATION_BOUND || newAgentY < -SIMULATION_BOUND || newAgentY > SIMULATION_BOUND {
-		agent.Score += LOSING_PENALTY
-		state.TerminalState = true
-	}
+	// if newAgentX < -SIMULATION_BOUND || newAgentX > SIMULATION_BOUND || newAgentY < -SIMULATION_BOUND || newAgentY > SIMULATION_BOUND {
+	// 	agent.Score += LOSING_PENALTY
+	// 	state.TerminalState = true
+	// }
 
 	// Check if agent has moved towards the reward (in both directions)
-	if math.Abs(targetLocationX-newAgentX) < math.Abs(targetLocationX-agentX) && math.Abs(targetLocationY-newAgentY) < math.Abs(targetLocationY-agentY) {
+	currentDistanceToTargetLocation := math.Hypot(newAgentX-targetLocationX, newAgentY-targetLocationY)
+	if currentDistanceToTargetLocation < minimumDistanceToCurrentTargetLocation {
+		minimumDistanceToCurrentTargetLocation = currentDistanceToTargetLocation
 		agent.Score += MOVEMENT_TOWARDS_LOCATION_REWARD
 	}
 
 	// Check if agent has collected the reward
-	if math.Pow(targetLocationX-newAgentX, 2)+math.Pow(targetLocationY-newAgentY, 2) < math.Pow(AGENT_RADIUS, 2) {
+	if math.Hypot(targetLocationX-newAgentX, targetLocationY-newAgentY) < AGENT_RADIUS {
+		// fmt.Printf("%v, %v\n", targetLocationX-newAgentX, targetLocationY-newAgentY)
 		agent.Score += TARGET_LOCATION_REWARD
 
-		targetLocationX, targetLocationY = system.chooseNextTargetLocation()
+		targetLocationX, targetLocationY = system.chooseNextTargetLocation(targetLocationX, targetLocationY)
 		numTargetLocationsVisited += 1
+		minimumDistanceToCurrentTargetLocation = math.Hypot(newAgentX-targetLocationX, newAgentY-targetLocationY)
 		if numTargetLocationsVisited >= MAX_LOCATIONS {
 			state.TerminalState = true
 		}
 	}
+
+	agent.Score += STEP_PENALTY
 
 	// Update state and finish up
 	state.StateIndex += 1
@@ -217,4 +233,5 @@ func (system *FlyingAgentSystem) AdvanceState(state *systemstate.SystemState, ag
 	state.StateVector.SetVec(4, targetLocationX)
 	state.StateVector.SetVec(5, targetLocationY)
 	state.StateVector.SetVec(6, numTargetLocationsVisited)
+	state.StateVector.SetVec(7, minimumDistanceToCurrentTargetLocation)
 }
