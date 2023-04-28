@@ -9,7 +9,7 @@ import argparse
 simulationData = pd.read_parquet("data/BestAgentSimulation.pq")
 animationSavePath = "data/animation.mp4"
 
-GAME_DIMENSION = 100
+GAME_DIMENSION = 1.5*100
 AGENT_RADIUS = 5
 TARGET_LOCATION_RADIUS = 2
 
@@ -36,7 +36,6 @@ ax.add_patch(agent)
 ax.add_patch(targetLocation)
 
 def update(index):
-
     stateVector = simulationData.loc[index, "StateVector"]
     agentX = stateVector[0]
     agentY = stateVector[1]
@@ -45,7 +44,12 @@ def update(index):
     targetLocationX = stateVector[4]
     targetLocationY = stateVector[5]
 
-    print(agentX, agentY, agentVelX, agentVelY, targetLocationX, targetLocationY)
+    # xLim = max(GAME_DIMENSION, abs(agentX))
+    # yLim = max(GAME_DIMENSION, abs(agentY))
+    # plt.xlim(-xLim, xLim)
+    # plt.ylim(-yLim, yLim)
+
+    # print(agentX, agentY, agentVelX, agentVelY, targetLocationX, targetLocationY)
     agent.set_center((agentX, agentY))
     targetLocation.set_center((targetLocationX, targetLocationY))
     return agent, targetLocation,
