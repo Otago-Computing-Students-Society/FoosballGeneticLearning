@@ -20,7 +20,7 @@ func TestMultiAgentSystem(t *testing.T) {
 		[]float64{0.0, 0.0, 0.0, 0.2, 0.2, 0.2, 0.2, 0.2},
 		2,
 		math.Pow10(-6))
-	manager := manager.NewManager(&targetSystem, 10, 8, geneticBreeder, false)
+	manager := manager.NewManager(&targetSystem, 100, 10, 8, geneticBreeder, false)
 	manager.SimulateManyGenerations(100)
 
 	os.RemoveAll("data")
