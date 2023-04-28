@@ -184,7 +184,7 @@ func (manager *Manager) SimulateGeneration() error {
 
 	// With the best agent, simulate and save the result
 	manager.logger.Printf("BEST AGENT SCORE: %v\n", bestAgent.Score)
-	manager.logger.Printf("SIMULATING BEST AGENT'S ")
+	manager.logger.Printf("SIMULATING BEST AGENT(S) ")
 	// Get the top n agents, where n is the number of agents needed for the simulation
 	bestAgentArray := make([]*agent.Agent, manager.system.NumAgentsPerSimulation())
 	for bestAgentIndex := range bestAgentArray {
