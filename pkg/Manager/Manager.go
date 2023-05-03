@@ -42,12 +42,15 @@ type Manager struct {
 //
 // System given must fully implement the System interface in `pkg/system`
 //
+// numAgents defines how many agents should be created. This should be a reasonable number for your system!
+// i.e. if your system requires 2 agents per simulation, this number should be even.
+//
 // numSimulationsPerGeneration defines how many simulations to run before tallying up the agents
 // scores and breeding a new generation. A large number is better, as it averages agent
 // performance.
 //
 // verbose is a bool flag determining if logs are printed to stdout as well as the log file
-func NewManager(system system.System, numSimulationsPerGeneration int, numThreads int, geneticBreeder *geneticbreeder.GeneticBreeder, verbose bool) *Manager {
+func NewManager(system system.System, numAgents int, numSimulationsPerGeneration int, numThreads int, geneticBreeder *geneticbreeder.GeneticBreeder, verbose bool) *Manager {
 	os.MkdirAll(path.Dir(DATA_DIRECTORY), 0700)
 	os.MkdirAll(path.Dir(LOG_FILE_PATH), 0700)
 
@@ -64,7 +67,6 @@ func NewManager(system system.System, numSimulationsPerGeneration int, numThread
 	}
 	logger := log.New(multiWriter, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
 
-	numAgents := system.NumAgentsPerSimulation() * numSimulationsPerGeneration
 	currentGeneration := make([]*agent.Agent, numAgents)
 	for agentIndex := range currentGeneration {
 		currentGeneration[agentIndex] = agent.NewRandomGaussianAgent(system.NumActions(), system.NumPercepts())
@@ -72,6 +74,10 @@ func NewManager(system system.System, numSimulationsPerGeneration int, numThread
 
 	if numThreads <= 0 {
 		panic("Number of threads must be a positive integer!")
+	}
+
+	if numAgents%system.NumAgentsPerSimulation() != 0 {
+		panic("numAgents must be divisible by system.NumAgentsPerSimulation!")
 	}
 
 	randomGenerator := rand.New(rand.NewSource(uint64(time.Now().Nanosecond())))
@@ -93,12 +99,12 @@ func NewManager(system system.System, numSimulationsPerGeneration int, numThread
 // Simulate a single repetition, of which there may be many (always at least one) within a generation
 // This method is not exposed publicly. The intention is for users to call SimulateGeneration instead.
 func (manager *Manager) simulateRepetition() error {
-	numAgentsPerSimulation := manager.system.NumAgentsPerSimulation()
+	numSimulations := len(manager.currentGeneration) / manager.system.NumAgentsPerSimulation()
 
 	// Channel to send collections of agents through to simulation goroutines.
 	// The number of agents sent at once is equal to the number of agents required
 	// for one simulation.
-	agentChannel := make(chan []*agent.Agent, manager.numSimulationsPerGeneration)
+	agentChannel := make(chan []*agent.Agent, numSimulations)
 	// Channel to receive signals (hence generic struct{}) for when a simulation finishes.
 	simulationFinishedSignalChannel := make(chan struct{})
 	// A simple counter of how many simulations are running
@@ -113,10 +119,10 @@ func (manager *Manager) simulateRepetition() error {
 	utils.ShuffleSlice(manager.randomGenerator, manager.currentGeneration)
 
 	// Actually start all the simulations
-	for simulationIndex := 0; simulationIndex < manager.numSimulationsPerGeneration; simulationIndex++ {
+	for simulationIndex := 0; simulationIndex < numSimulations; simulationIndex++ {
 		simulationsRunningCounter += 1
 		// Find the agents to be used in this simulation
-		simulationAgents := manager.currentGeneration[numAgentsPerSimulation*simulationIndex : numAgentsPerSimulation*(simulationIndex+1)]
+		simulationAgents := manager.currentGeneration[manager.system.NumAgentsPerSimulation()*simulationIndex : manager.system.NumAgentsPerSimulation()*(simulationIndex+1)]
 		// Send the agents to the simulators - blocks until agents can be taken
 		agentChannel <- simulationAgents
 	}
@@ -178,7 +184,7 @@ func (manager *Manager) SimulateGeneration() error {
 
 	// With the best agent, simulate and save the result
 	manager.logger.Printf("BEST AGENT SCORE: %v\n", bestAgent.Score)
-	manager.logger.Printf("SIMULATING BEST AGENT'S ")
+	manager.logger.Printf("SIMULATING BEST AGENT(S) ")
 	// Get the top n agents, where n is the number of agents needed for the simulation
 	bestAgentArray := make([]*agent.Agent, manager.system.NumAgentsPerSimulation())
 	for bestAgentIndex := range bestAgentArray {

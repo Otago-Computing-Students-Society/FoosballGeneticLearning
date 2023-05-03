@@ -6,7 +6,7 @@ import (
 	system "github.com/Otago-Computer-Science-Society/FoosballGeneticLearning/pkg/System"
 )
 
-const MAXIMUM_SIMULATION_ITERATIONS = 10000
+const MAXIMUM_SIMULATION_ITERATIONS = 5000
 
 // Define a wrapper around the simulation functions to allow for easy concurrency
 //
